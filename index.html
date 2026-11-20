@@ -4,8 +4,14 @@
   <meta name="google-site-verification" content="DhkKv2zVrRf48NqjEiA29yLakCPJcIOOqJIOFYds_8o" />
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dealora</title><meta name="description" content="Product discovery with links to Indian retailers.">
-<meta property="og:title" content="Nandha Affiliate Store"><meta property="og:type" content="website">
+<title>Velmora | Shop Smart</title>
+<meta name="description" content="Discover hand-picked products and deals from Indian retailers with Velmora. Check current prices on the retailer's website before buying.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://nandha697.github.io/DEALORA/">
+<meta property="og:title" content="Velmora | Shop Smart"><meta property="og:description" content="Find the deal. Love the savings. Discover products from Indian retailers."><meta property="og:type" content="website">
+<meta property="og:url" content="https://nandha697.github.io/DEALORA/">
+<meta property="og:image" content="https://fyqskrkplwrbinirtldo.supabase.co/storage/v1/object/public/dealora-assets/VELMORA%20LOGO.jpeg">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Velmora | Shop Smart"><meta name="twitter:description" content="Discover products and deals from Indian retailers."><meta name="twitter:image" content="https://fyqskrkplwrbinirtldo.supabase.co/storage/v1/object/public/dealora-assets/VELMORA%20LOGO.jpeg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
 <style>
@@ -790,13 +796,14 @@ a:focus-visible {
     font-size: 10px;
   }
 }
+.price-status{font-size:.78rem;margin:5px 0 8px}.price-status.fresh{color:#247342}.price-status.stale{color:#9a5700}.page-copy{max-width:78ch;white-space:pre-line;line-height:1.75}.toolbar select{min-width:145px}
 </style></head><body>
 <header><div class="wrap bar">
 <a class="logo" href="#/">
-  <img src="https://fyqskrkplwrbinirtldo.supabase.co/storage/v1/object/public/dealora-assets/VELMORA%20LOGO.jpeg" alt="Dealora logo">
+  <img src="https://fyqskrkplwrbinirtldo.supabase.co/storage/v1/object/public/dealora-assets/VELMORA%20LOGO.jpeg" alt="Velmora logo">
   <span id="brand">Velmora</span>
 </a>
- <div class="search"><input id="q" type="search" placeholder="Search products, e.g. HP laptop" aria-label="Search products" autocomplete="off"><button id="qc" aria-label="Clear search" hidden>✕</button></div>
+ <div class="search"><input id="q" type="search" placeholder="Search products, brands or retailers" aria-label="Search products, brands or retailers" autocomplete="off" list="qsuggestions"><datalist id="qsuggestions"></datalist><button id="qc" aria-label="Clear search" hidden>✕</button></div>
  <button class="burger" id="bg" aria-label="Menu" aria-expanded="false">Menu</button>
  <nav id="nav"><a href="#/">Home</a><div class="menu" id="dm"><button id="dmb" aria-haspopup="true">Departments ▾</button><div class="dd" id="dd"></div></div><a href="#/deals">Today's Deals</a><a href="#/trending">Trending</a></nav>
 </div></header>
@@ -826,9 +833,13 @@ $('#brand').textContent=CONFIG.brand;$('#fb').textContent=CONFIG.brand;$('#yr').
 $('#ig').href=CONFIG.instagram;$('#fd').textContent=DISCLOSURE;
 const sb=CONFIG.supabaseUrl?supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseAnonKey):null;
 let P=[],C=[],ready=false,session=null,query='';
-const setTitle=(t,d)=>{document.title=t?t+' | '+CONFIG.brand:CONFIG.brand;document.querySelector('meta[name=description]').content=d||'Product discovery with links to Indian retailers.';document.querySelector('meta[property="og:title"]').content=document.title};
+const setTitle=(t,d)=>{document.title=t?t+' | '+CONFIG.brand:CONFIG.brand;document.querySelector('meta[name=description]').content=d||'Discover products and deals from Indian retailers with Velmora. Confirm current details on the retailer website.';document.querySelector('meta[property="og:title"]').content=document.title;const ogd=document.querySelector('meta[property="og:description"]');if(ogd)ogd.content=d||'Find the deal. Love the savings.';const canon=document.querySelector('link[rel=canonical]');if(canon)canon.href='https://nandha697.github.io/DEALORA/';}
 const okUrl=u=>{try{const x=new URL(u);return x.protocol==='https:'&&CONFIG.allowedHosts.some(h=>x.hostname===h||x.hostname.endsWith('.'+h))}catch{return false}};
-const verified=p=>p.original_price&&p.last_verified&&p.original_price>p.price;
+// Price checks older than 30 days are treated as stale; the database has no explicit expiry column.
+const PRICE_CHECK_MAX_AGE_DAYS=30;
+const freshPrice=p=>{if(!p.last_verified)return false;const d=new Date(String(p.last_verified).slice(0,10)+'T00:00:00');if(Number.isNaN(d.getTime()))return false;const age=(Date.now()-d.getTime())/86400000;return age>=-1&&age<=PRICE_CHECK_MAX_AGE_DAYS};
+const verified=p=>!!(p.original_price&&p.last_verified&&p.original_price>p.price&&freshPrice(p));
+const priceStatus=p=>!p.last_verified?'Price not verified':freshPrice(p)?`Price checked ${String(p.last_verified).slice(0,10)}`:`Price check is over ${PRICE_CHECK_MAX_AGE_DAYS} days old`;
 const pct=p=>Math.round((1-p.price/p.original_price)*100);
 function card(p){
  const ok=p.affiliate_url&&okUrl(p.affiliate_url);
@@ -848,8 +859,9 @@ function card(p){
        ${verified(p)?`<s>${inr(p.original_price)}</s>`:''}
      </div>
      <div class="ret dealora-retailer">${esc(p.retailer)}</div>
+     <div class="ret price-status ${freshPrice(p)?'fresh':'stale'}">${esc(priceStatus(p))}</div>
      ${ok
-       ? `<a class="btn alt dealora-deal-btn" href="${esc(p.affiliate_url)}" target="_blank" rel="sponsored noopener noreferrer">View Deal <span aria-hidden="true">→</span></a>`
+       ? `<a class="btn alt dealora-deal-btn" href="${esc(p.affiliate_url)}" target="_blank" rel="sponsored noopener noreferrer">${freshPrice(p)?'View Deal':'Check Current Price'} <span aria-hidden="true">→</span></a>`
        : `<span class="btn dealora-deal-disabled" aria-disabled="true">Link unavailable</span>`}
    </div>
  </article>`;
@@ -932,45 +944,83 @@ function home(){
  <section><h2>Latest additions</h2>${grid(l.slice(0,8))}</section>
  <section><h2>Browse by budget</h2><div class="chips">${CONFIG.budgets.map(b=>`<a class="chip" href="#/budget/${b}">Under ${inr(b)}</a>`).join('')}</div></section>
  <section><h2>All products</h2>${browser(l)}</section>${disc()}`;wireBrowser(l)}
-function browser(l){const subs=[...new Set(l.map(p=>p.subcategory))];return `<div class="toolbar"><select id="fc" aria-label="Category"><option value="">All categories</option>${subs.map(s=>`<option>${esc(s)}</option>`).join('')}</select><select id="fs" aria-label="Sort"><option value="new">Newest</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="off">Biggest verified discount</option></select></div><div id="bl">${grid(l)}</div>`}
-function wireBrowser(l){const f=()=>{const c=$('#fc').value;$('#bl').innerHTML=grid(sorter(l.filter(p=>!c||p.subcategory===c),$('#fs').value))};$('#fc').onchange=$('#fs').onchange=f}
+function browser(l){const cats=[...new Set(l.map(p=>p.category).filter(Boolean))].sort();const retailers=[...new Set(l.map(p=>p.retailer).filter(Boolean))].sort();return `<div class="toolbar"><select id="fc" aria-label="Filter by department"><option value="">All departments</option>${cats.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}</select><select id="fr" aria-label="Filter by retailer"><option value="">All retailers</option>${retailers.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}</select><select id="fs" aria-label="Sort products"><option value="new">Newest</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="off">Biggest verified discount</option></select></div><div id="bl">${grid(l)}</div>`}
+function wireBrowser(l){const f=()=>{const c=$('#fc').value,r=$('#fr').value;const filtered=l.filter(p=>(!c||p.category===c)&&(!r||p.retailer===r));const sorted=sorter(filtered,$('#fs').value);$('#bl').innerHTML=sorted.length?grid(sorted):'<div class="note">No products match these filters. Try another department or retailer.</div>'};$('#fc').onchange=f;$('#fr').onchange=f;$('#fs').onchange=f}
 function list(title,l,extra=''){setTitle(title);app.innerHTML=`<section><h2>${esc(title)}</h2>${extra}${browser(l)}</section>${disc()}`;wireBrowser(l)}
 function search() {
   const t = query.trim().toLowerCase();
-  setTitle('Search');
-
-  const r = pub().filter(p => {
-    const name = String(p.name || '').toLowerCase();
-    const category = String(p.category || '').toLowerCase();
-    const subcategory = String(p.subcategory || '').toLowerCase();
-
-    return (
-      name.includes(t) ||
-      category.includes(t) ||
-      subcategory.includes(t)
-    );
-  });
-
-  app.innerHTML = `
-    <section>
-      <h2>Results for "${esc(query)}"</h2>
-      ${
-        r.length
-          ? grid(r)
-          : `<div class="note">
-              No matching products found.
-              Try another product name or category.
-            </div>`
-      }
-    </section>
-    ${disc()}
-  `;
+  setTitle(t ? `Search: ${query.trim()}` : 'Search');
+  const r = pub().filter(p => [p.name,p.brand,p.category,p.subcategory,p.retailer,p.description]
+    .some(v => String(v || '').toLowerCase().includes(t)));
+  app.innerHTML = `<section><h2>Results for "${esc(query)}"</h2>${r.length?grid(r):`<div class="note"><strong>No matching products found.</strong><br>Try a different product name, brand, department or retailer.</div>`}</section>${disc()}`;
+}
+function updateSearchSuggestions(value){
+ const box=$('#qsuggestions');if(!box)return;
+ const t=String(value||'').trim().toLowerCase();
+ if(!t){box.innerHTML='';return;}
+ const values=[];
+ pub().forEach(p=>[p.name,p.brand,p.retailer,p.category,p.subcategory].forEach(v=>{if(v&&String(v).toLowerCase().includes(t)&&!values.includes(String(v)))values.push(String(v));}));
+ box.innerHTML=values.slice(0,8).map(v=>`<option value="${esc(v)}"></option>`).join('');
 }
 function detail(id){const p=P.find(x=>x.id===id&&(x.published||session));if(!p){setTitle('Not found');app.innerHTML=`<div class="note"><h2>Product not found</h2><a class="btn" href="#/">Back home</a></div>`;return}
  setTitle(p.name,p.description?.slice(0,150));const ok=p.affiliate_url&&okUrl(p.affiliate_url);
- app.innerHTML=`<section class="detail"><div class="card"><div class="img">${p.image?`<img src="${esc(p.image)}" alt="${esc(p.name)}">`:'No image'}</div></div><div><p class="ret">${esc(p.category)} / ${esc(p.subcategory)}</p><h1>${esc(p.name)}</h1><div class="pr">${inr(p.price)}${verified(p)?`<s>${inr(p.original_price)}</s> ${pct(p)}% off`:''}</div><p>${esc(p.description)}</p><p class="ret">Sold by ${esc(p.retailer)}${p.last_verified?`. Price last checked ${esc(p.last_verified)}.`:'.'}</p>
- ${ok?`<a class="btn alt" href="${esc(p.affiliate_url)}" target="_blank" rel="sponsored noopener noreferrer">View Deal</a>`:`<span class="btn" aria-disabled="true">Link unavailable</span>${session?'<p class="err">Admin notice: this product has no valid affiliate link.</p>':''}`}${disc()}</div></section>`}
-const PAGES={about:['About Us','We help shoppers in India discover products and link them to the retailer that sells them. We do not sell products ourselves.'],contact:['Contact',CONFIG.contact],privacy:['Privacy Policy','Replace with your privacy policy. Mention that retailers and affiliate networks may set cookies when you click through.'],terms:['Terms and Conditions','Replace with your terms. Purchases happen on retailer websites under their terms.'],disclosure:['Affiliate Disclosure',DISCLOSURE]};
+ app.innerHTML=`<section class="detail"><div class="card"><div class="img">${p.image?`<img src="${esc(p.image)}" alt="${esc(p.name)}">`:'No image'}</div></div><div><p class="ret">${esc(p.category)} / ${esc(p.subcategory)}</p><h1>${esc(p.name)}</h1><div class="pr">${inr(p.price)}${verified(p)?`<s>${inr(p.original_price)}</s> ${pct(p)}% off`:''}</div><p>${esc(p.description)}</p><p class="ret">Sold by ${esc(p.retailer)}. ${esc(priceStatus(p))}. Prices and stock may change; confirm on the retailer's website.</p>
+ ${ok?`<a class="btn alt" href="${esc(p.affiliate_url)}" target="_blank" rel="sponsored noopener noreferrer">View Deal</a>`:`<span class="btn" aria-disabled="true">Link unavailable</span>${session?'<p class="err">Admin notice: this product has no valid affiliate link.</p>':''}`}${disc()}</div></section>`;const previous=document.getElementById('product-jsonld');if(previous)previous.remove();const jsonLd=document.createElement('script');jsonLd.id='product-jsonld';jsonLd.type='application/ld+json';const productSchema={'@context':'https://schema.org','@type':'Product',name:p.name,description:p.description||'',image:p.image?[p.image]:undefined,brand:p.brand?{'@type':'Brand',name:p.brand}:undefined,offers:{'@type':'Offer',price:Number(p.price),priceCurrency:p.currency||'INR',url:location.href}};jsonLd.textContent=JSON.stringify(productSchema);document.head.appendChild(jsonLd)}
+const PAGES={
+ about:['About Us','Velmora helps visitors discover products and offers listed with links to third-party retailers. Velmora is a product-discovery and affiliate website; it does not sell, ship or fulfil the products shown. Product information is provided for convenience and should be checked with the retailer before purchase.'],
+ contact:['Contact',`For website questions or corrections, email ${CONFIG.contact}. When reporting a listing, include the product name and link so we can identify it.`],
+ privacy:['Privacy Policy',`Last updated: 20 November 2026
+
+1. About this policy
+Velmora is a product-discovery website. This policy explains, in general terms, how information may be handled when you browse the website.
+
+2. Information you provide
+The public shopping pages do not ask you to create a customer account or submit payment details. If you email us, we receive the information you choose to include in your message, such as your email address and message content. Please do not email passwords, payment-card details or other sensitive information.
+
+3. Technical information and service providers
+The website uses Supabase to retrieve product and category listings and to support administrator authentication and storage. The hosting provider, Supabase and other infrastructure providers may process technical information such as request, device or security logs as part of operating their services. Their own privacy notices and settings govern their processing. This website does not claim to control the data practices of those providers.
+
+4. Affiliate links and third-party websites
+When you select a retailer or affiliate link, you leave Velmora and visit a third-party service. Retailers and affiliate networks may use cookies or similar technologies to attribute referrals, measure activity, personalise services or process purchases. Their privacy policies apply to activity on their services. We do not receive your retailer password or payment details through the affiliate link.
+
+5. Purchases and payments
+Purchases, payment processing, delivery, returns and refunds are handled by the retailer, not Velmora. Do not send payment information to Velmora.
+
+6. Data retention and choices
+Email correspondence may be retained as needed to respond and maintain business records. You can choose not to use affiliate links and can contact us to ask about a message you have sent. Browser and third-party controls may let you manage cookies or tracking, but blocking them can affect third-party services.
+
+7. Children
+This website is not designed to request personal information from children.
+
+8. Changes and contact
+We may update this policy as the website changes. The updated date above will be revised when material changes are made. For privacy questions, contact ${CONFIG.contact}.`],
+ terms:['Terms and Conditions',`Last updated: 20 November 2026
+
+1. Using Velmora
+By browsing this website, you agree to use it lawfully and not attempt to disrupt, damage or gain unauthorised access to the website, its accounts or its services.
+
+2. Product information and prices
+Product names, descriptions, images, prices, discounts and availability are provided for discovery purposes and may be incomplete, delayed or changed by the retailer. A displayed price or discount is not a guarantee. Price-check dates are indicative only. Always confirm the final price, stock, delivery charges, seller and terms on the retailer's website before ordering.
+
+3. Third-party retailers
+Velmora does not sell or fulfil listed products. If you click a retailer link, your purchase is made with that third party and is governed by its terms, privacy policy, payment rules, shipping arrangements, cancellation policy and return/refund process. Velmora is not responsible for third-party products, services, transactions or website content.
+
+4. Affiliate links
+Some links may be affiliate links. Velmora may earn a commission from qualifying purchases at no additional cost to you. This does not guarantee that a product is the lowest-priced option or suitable for your needs.
+
+5. Website content and availability
+We aim to keep listings useful, but do not guarantee that the website will always be available, error-free or fully up to date. We may correct, change or remove listings without notice. Product images and trademarks belong to their respective owners and are used for identification or listing purposes.
+
+6. No professional advice
+Website content is general information and is not professional, financial, medical or other specialist advice. Make purchase decisions using the retailer's current information and your own judgement.
+
+7. Liability
+To the extent permitted by applicable law, Velmora is not liable for losses arising from reliance on outdated listing information, third-party websites, products, purchases or interruptions to the website. Nothing in these terms excludes liability that cannot legally be excluded.
+
+8. Changes and contact
+These terms may be updated from time to time. Continued use after an update means you accept the revised terms. Questions can be sent to ${CONFIG.contact}.`],
+ disclosure:['Affiliate Disclosure',DISCLOSURE]
+};
 // ---------- Admin ----------
 async function isAdmin(){
   if(!session) return false;
@@ -1027,6 +1077,7 @@ function form(p){const n=!p;p=p||{currency:'INR',published:true};const deps=[...
   const {error}=n?await sb.from('products').insert(row):await sb.from('products').update(row).eq('id',row.id);if(error)return msg(error.message,1);await load();admin();msg('Product saved.')}}
 // ---------- Router ----------
 async function route(){
+ const oldLd=document.getElementById('product-jsonld');if(oldLd)oldLd.remove();
  if(!ready){app.innerHTML='<div class="spin" role="status" aria-label="Loading"></div>';if(!await load())return}
  $('#nav').classList.remove('show');$('#dm').classList.remove('open');window.scrollTo(0,0);
  const [,a,b]=location.hash.split('/');const l=pub();
@@ -1034,17 +1085,17 @@ async function route(){
  if(!a)return home();
  if(a==='admin')return admin();
  if(a==='all')return list('All products',l);
- if(a==='deals')return list("Today's deals",l.filter(verified).sort((x,y)=>pct(y)-pct(x)),'<p class="ret">Only products with a verified original price are listed.</p>');
+ if(a==='deals')return list("Today's deals",l.filter(p=>verified(p)&&freshPrice(p)).sort((x,y)=>pct(y)-pct(x)),'<p class="ret">Only products with a recent price check and a higher original price are shown. Confirm all prices on the retailer website.</p>');
  if(a==='trending')return list('Trending products',l.filter(p=>p.featured));
  if(a==='budget')return list('Under '+inr(+b),l.filter(p=>p.price<=+b));
  if(a==='d'){const D=[...new Set(C.map(c=>c.department))].find(d=>slug(d)===b);return D?list(D,l.filter(p=>p.category===D)):detail('')}
  if(a==='c'){const c=C.find(c=>slug(c.name)===b);return c?list(c.name,l.filter(p=>p.subcategory===c.name&&p.category===c.department)):detail('')}
  if(a==='p')return detail(b);
- if(a==='page'&&PAGES[b]){setTitle(PAGES[b][0]);app.innerHTML=`<section><h2>${PAGES[b][0]}</h2><p style="max-width:70ch">${esc(PAGES[b][1])}</p></section>`;return}
+ if(a==='page'&&PAGES[b]){setTitle(PAGES[b][0]);app.innerHTML=`<section><h2>${esc(PAGES[b][0])}</h2><div class="page-copy">${esc(PAGES[b][1])}</div></section>${disc()}`;return}
  detail('')}
-$('#q').oninput=e=>{query=e.target.value;$('#qc').hidden=!query;route()};
-$('#qc').onclick=()=>{query='';$('#q').value='';$('#qc').hidden=true;route()};
+$('#q').oninput=e=>{query=e.target.value;$('#qc').hidden=!query;updateSearchSuggestions(query);route()};
+$('#qc').onclick=()=>{query='';$('#q').value='';$('#qc').hidden=true;updateSearchSuggestions('');route()};
 $('#bg').onclick=()=>{const s=$('#nav').classList.toggle('show');$('#bg').setAttribute('aria-expanded',s)};
 $('#dmb').onclick=()=>$('#dm').classList.toggle('open');
-addEventListener('hashchange',()=>{query='';$('#q').value='';$('#qc').hidden=true;route()});route();
+addEventListener('hashchange',()=>{query='';$('#q').value='';$('#qc').hidden=true;updateSearchSuggestions('');route()});route();
 </script></body></html>
