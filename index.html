@@ -1069,10 +1069,9 @@ function form(p){const n=!p;p=p||{currency:'INR',published:true};const deps=[...
  <label><span><input type="checkbox" name="featured" ${p.featured?'checked':''}> Featured (Trending)</span></label><label><span><input type="checkbox" name="published" ${p.published?'checked':''}> Published</span></label>
  <div><button class="btn">Save product</button> <button type="button" class="btn ghost" id="cx">Cancel</button></div></form>`;
  const f = $('#pf');
-
 if (n) {
   f.elements.namedItem('id').value =
-    `product-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    `product-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   f.elements.namedItem('id').readOnly = true;
 }
 
