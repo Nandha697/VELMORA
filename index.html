@@ -1071,8 +1071,7 @@ function form(p){const n=!p;p=p||{currency:'INR',published:true};const deps=[...
  <div><button class="btn">Save product</button> <button type="button" class="btn ghost" id="cx">Cancel</button></div></form>`;
  const f = $('#pf');
 if (n) {
-  f.elements.namedItem('id').value =
-    `product-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  f.elements.namedItem('id').value = `product-${crypto.randomUUID()}`;
   f.elements.namedItem('id').readOnly = true;
 }
 
