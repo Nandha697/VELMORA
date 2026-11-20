@@ -1059,7 +1059,7 @@ function catForm(){$('#ed').innerHTML=`<form class="form" id="cf"><h3>New catego
  $('#cf').onsubmit=async e=>{e.preventDefault();const f=e.target;const {error}=await sb.from('categories').insert({department:f.d.value.trim(),name:f.n.value.trim(),always_visible:f.v.checked});if(error)return msg(error.message,1);await load();admin();msg('Category added.')}}
 function form(p){const n=!p;p=p||{currency:'INR',published:true};const deps=[...new Set(C.map(c=>c.department))];
  $('#ed').innerHTML=`<form class="form" id="pf"><h3>${n?'Add':'Edit'} product</h3>
- <div class="two"><label>Product ID<input name="id" value="${esc(p.id||'')}" ${n?'':'readonly'} pattern="[a-z0-9\\-]{3,60}" placeholder="product-001" required></label><label>Name<input name="name" value="${esc(p.name||'')}" required></label>
+ <div class="two"><label>Product ID<input name="id" value="${esc(p.id||'')}" ${n?'placeholder="Generating..." readonly':'readonly'} pattern="[a-z0-9\\-]{3,60}" required></label>
  <label>Department<select name="category">${deps.map(d=>`<option ${d===p.category?'selected':''}>${esc(d)}`).join('')}</select></label><label>Subcategory<select name="subcategory"></select></label>
  <label>Current price (₹)<input name="price" type="number" min="0" step="1" value="${p.price??''}" required></label><label>Original price (₹, only if verified)<input name="original_price" type="number" min="0" step="1" value="${p.original_price??''}"></label>
  <label>Retailer<input name="retailer" value="${esc(p.retailer||'')}" required placeholder="Flipkart"></label><label>Last verified<input name="last_verified" type="date" value="${p.last_verified||''}"></label></div>
@@ -1068,12 +1068,43 @@ function form(p){const n=!p;p=p||{currency:'INR',published:true};const deps=[...
  <label>Description<textarea name="description" rows="3">${esc(p.description||'')}</textarea></label>
  <label><span><input type="checkbox" name="featured" ${p.featured?'checked':''}> Featured (Trending)</span></label><label><span><input type="checkbox" name="published" ${p.published?'checked':''}> Published</span></label>
  <div><button class="btn">Save product</button> <button type="button" class="btn ghost" id="cx">Cancel</button></div></form>`;
- const f=$('#pf'),fill=()=>f.subcategory.innerHTML=C.filter(c=>c.department===f.category.value).map(c=>`<option ${c.name===p.subcategory?'selected':''}>${esc(c.name)}`).join('');fill();f.category.onchange=fill;$('#cx').onclick=()=>$('#ed').innerHTML='';
+ const f = $('#pf');
+
+if (n) {
+  f.elements.namedItem('id').value =
+    `product-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+  f.elements.namedItem('id').readOnly = true;
+}
+
+const fill = () => {
+  f.subcategory.innerHTML = C
+    .filter(c => c.department === f.category.value)
+    .map(c => `<option ${c.name === p.subcategory ? 'selected' : ''}>${esc(c.name)}</option>`)
+    .join('');
+};
+
+fill();
+f.category.onchange = fill;
+$('#cx').onclick = () => $('#ed').innerHTML = '';
  f.onsubmit=async e=>{e.preventDefault();const u=f.affiliate_url.value.trim();if(u&&!okUrl(u))return msg('Affiliate link must be https and on an approved domain (CONFIG.allowedHosts).',1);
   const price=+f.price.value,op=f.original_price.value?+f.original_price.value:null;if(op!==null&&op<=price)return msg('Original price must be higher than current price, or leave it empty.',1);
   let image=f.image.value.trim()||null;const file=f.file.files[0];
   if(file){if(file.size>3e6)return msg('Image must be under 3 MB.',1);const path=`${f.id.value}-${Date.now()}.${file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'')}`;const up=await sb.storage.from('product-images').upload(path,file);if(up.error)return msg(up.error.message,1);image=sb.storage.from('product-images').getPublicUrl(path).data.publicUrl}
-  const row={id:f.id.value,name:f.name.value.trim(),category:f.category.value,subcategory:f.subcategory.value,price,original_price:op,retailer:f.retailer.value.trim(),image,description:f.description.value.trim(),affiliate_url:u||null,last_verified:f.last_verified.value||null,featured:f.featured.checked,published:f.published.checked};
+  const row = {
+ id: f.id.value,
+  name: f.name.value.trim(),
+  category: f.category.value,
+  subcategory: f.subcategory.value,
+  price,
+  original_price: op,
+  retailer: f.retailer.value.trim(),
+  image,
+  description: f.description.value.trim(),
+  affiliate_url: u || null,
+  last_verified: f.last_verified.value || null,
+  featured: f.featured.checked,
+  published: f.published.checked
+};
   const {error}=n?await sb.from('products').insert(row):await sb.from('products').update(row).eq('id',row.id);if(error)return msg(error.message,1);await load();admin();msg('Product saved.')}}
 // ---------- Router ----------
 async function route(){
