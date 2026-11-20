@@ -1060,6 +1060,7 @@ function catForm(){$('#ed').innerHTML=`<form class="form" id="cf"><h3>New catego
 function form(p){const n=!p;p=p||{currency:'INR',published:true};const deps=[...new Set(C.map(c=>c.department))];
  $('#ed').innerHTML=`<form class="form" id="pf"><h3>${n?'Add':'Edit'} product</h3>
  <div class="two"><label>Product ID<input name="id" value="${esc(p.id||'')}" ${n?'placeholder="Generating..." readonly':'readonly'} pattern="[a-z0-9\\-]{3,60}" required></label>
+ <label>Product Name<input name="name" value="${esc(p.name||'')}" required></label>
  <label>Department<select name="category">${deps.map(d=>`<option ${d===p.category?'selected':''}>${esc(d)}`).join('')}</select></label><label>Subcategory<select name="subcategory"></select></label>
  <label>Current price (₹)<input name="price" type="number" min="0" step="1" value="${p.price??''}" required></label><label>Original price (₹, only if verified)<input name="original_price" type="number" min="0" step="1" value="${p.original_price??''}"></label>
  <label>Retailer<input name="retailer" value="${esc(p.retailer||'')}" required placeholder="Flipkart"></label><label>Last verified<input name="last_verified" type="date" value="${p.last_verified||''}"></label></div>
@@ -1103,7 +1104,7 @@ const path = `${productId}-${Date.now()}.${file.name.split('.').pop().toLowerCas
 };
 const row = {
   id: getField('id').value,
-  name: getField('name').value.trim(),
+name: f.querySelector('[name="name"]').value.trim(),
   category: getField('category').value,
   subcategory: getField('subcategory').value,
   price: price,
