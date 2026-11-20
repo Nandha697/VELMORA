@@ -1094,7 +1094,7 @@ const file = f.elements.namedItem('file')?.files?.[0];
   if(file){if(file.size>3e6)return msg('Image must be under 3 MB.',1);const path=`${f.id.value}-${Date.now()}.${file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'')}`;const up=await sb.storage.from('product-images').upload(path,file);if(up.error)return msg(up.error.message,1);image=sb.storage.from('product-images').getPublicUrl(path).data.publicUrl}
   const row = {
  id: f.id.value,
-  name: f.name.value.trim(),
+ name: f.elements.namedItem('name').value.trim(),
   category: f.category.value,
   subcategory: f.subcategory.value,
   price,
