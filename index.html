@@ -1093,19 +1093,19 @@ const op = originalValue ? Number(originalValue) : null;if(op!==null&&op<=price)
 const file = f.elements.namedItem('file')?.files?.[0];
   if(file){if(file.size>3e6)return msg('Image must be under 3 MB.',1);const path=`${f.id.value}-${Date.now()}.${file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'')}`;const up=await sb.storage.from('product-images').upload(path,file);if(up.error)return msg(up.error.message,1);image=sb.storage.from('product-images').getPublicUrl(path).data.publicUrl}
   const row = {
- id: f.id.value,
- name: f.elements.namedItem('name').value.trim(),
-  category: f.category.value,
-  subcategory: f.subcategory.value,
-  price,
+  id: f.elements.namedItem('id').value,
+  name: f.elements.namedItem('name').value.trim(),
+  category: f.elements.namedItem('category').value,
+  subcategory: f.elements.namedItem('subcategory').value,
+  price: price,
   original_price: op,
-  retailer: f.retailer.value.trim(),
-  image,
-  description: f.description.value.trim(),
+  retailer: f.elements.namedItem('retailer').value.trim(),
+  image: image,
+  description: f.elements.namedItem('description').value.trim(),
   affiliate_url: u || null,
-  last_verified: f.last_verified.value || null,
-  featured: f.featured.checked,
-  published: f.published.checked
+  last_verified: f.elements.namedItem('last_verified').value || null,
+  featured: f.elements.namedItem('featured').checked,
+  published: f.elements.namedItem('published').checked
 };
   const {error}=n?await sb.from('products').insert(row):await sb.from('products').update(row).eq('id',row.id);if(error)return msg(error.message,1);await load();admin();msg('Product saved.')}}
 // ---------- Router ----------
