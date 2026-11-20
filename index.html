@@ -1085,9 +1085,12 @@ const fill = () => {
 fill();
 f.category.onchange = fill;
 $('#cx').onclick = () => $('#ed').innerHTML = '';
- f.onsubmit=async e=>{e.preventDefault();const u=f.affiliate_url.value.trim();if(u&&!okUrl(u))return msg('Affiliate link must be https and on an approved domain (CONFIG.allowedHosts).',1);
-  const price=+f.price.value,op=f.original_price.value?+f.original_price.value:null;if(op!==null&&op<=price)return msg('Original price must be higher than current price, or leave it empty.',1);
-  let image=f.image.value.trim()||null;const file=f.file.files[0];
+ f.onsubmit=async e=>{e.preventDefault();const u = f.elements.namedItem('affiliate_url')?.value?.trim() || '';if(u&&!okUrl(u))return msg('Affiliate link must be https and on an approved domain (CONFIG.allowedHosts).',1);
+ const price = Number(f.elements.namedItem('price')?.value || 0);
+const originalValue = f.elements.namedItem('original_price')?.value;
+const op = originalValue ? Number(originalValue) : null;if(op!==null&&op<=price)return msg('Original price must be higher than current price, or leave it empty.',1);
+ let image = f.elements.namedItem('image')?.value?.trim() || null;
+const file = f.elements.namedItem('file')?.files?.[0];
   if(file){if(file.size>3e6)return msg('Image must be under 3 MB.',1);const path=`${f.id.value}-${Date.now()}.${file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'')}`;const up=await sb.storage.from('product-images').upload(path,file);if(up.error)return msg(up.error.message,1);image=sb.storage.from('product-images').getPublicUrl(path).data.publicUrl}
   const row = {
  id: f.id.value,
