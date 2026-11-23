@@ -7,9 +7,9 @@
 <title>Velmora | Shop Smart</title>
 <meta name="description" content="Discover hand-picked products and deals from Indian retailers with Velmora. Check current prices on the retailer's website before buying.">
 <meta name="robots" content="index,follow,max-image-preview:large">
-<link rel="canonical" href="https://nandha697.github.io/DEALORA/">
+<link rel="canonical" href="https://velmorashop.vercel.app/">
 <meta property="og:title" content="Velmora | Shop Smart"><meta property="og:description" content="Find the deal. Love the savings. Discover products from Indian retailers."><meta property="og:type" content="website">
-<meta property="og:url" content="https://nandha697.github.io/DEALORA/">
+<meta property="og:url" content="https://velmorashop.vercel.app/">
 <meta property="og:image" content="https://fyqskrkplwrbinirtldo.supabase.co/storage/v1/object/public/dealora-assets/VELMORA%20LOGO.jpeg">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Velmora | Shop Smart"><meta name="twitter:description" content="Discover products and deals from Indian retailers."><meta name="twitter:image" content="https://fyqskrkplwrbinirtldo.supabase.co/storage/v1/object/public/dealora-assets/VELMORA%20LOGO.jpeg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -797,6 +797,15 @@ a:focus-visible {
   }
 }
 .price-status{font-size:.78rem;margin:5px 0 8px}.price-status.fresh{color:#247342}.price-status.stale{color:#9a5700}.page-copy{max-width:78ch;white-space:pre-line;line-height:1.75}.toolbar select{min-width:145px}
+
+/* VELMORA product sharing */
+.share-product-btn{width:100%;padding:11px 14px;border:1.5px solid #6c3bff;border-radius:11px;background:#fff;color:#6033db;font-weight:800;cursor:pointer;margin-top:6px}
+.share-product-btn:hover{background:#eee7ff}
+.share-dialog{border:1px solid #e5dfff;border-radius:18px;padding:24px;width:min(390px,calc(100vw - 48px));box-shadow:0 20px 70px #24175744;color:#241757;background:white}
+.share-dialog::backdrop{background:#17112c99}
+.share-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.share-actions a,.share-actions button{border:1px solid #ddd4fa;background:#f8f7ff;border-radius:10px;padding:10px 12px;cursor:pointer;color:#241757;font-weight:700}
+.share-dialog-close{float:right;border:0;background:transparent;font-size:24px;cursor:pointer}
 </style></head><body>
 <header><div class="wrap bar">
 <a class="logo" href="#/">
@@ -808,13 +817,14 @@ a:focus-visible {
  <nav id="nav"><a href="#/">Home</a><div class="menu" id="dm"><button id="dmb" aria-haspopup="true">Departments ▾</button><div class="dd" id="dd"></div></div><a href="#/deals">Today's Deals</a><a href="#/trending">Trending</a></nav>
 </div></header>
 <main id="app" class="wrap" aria-live="polite"></main>
-<footer><div class="wrap"><p><a href="#/page/about">About Us</a><a href="#/page/contact">Contact</a><a href="#/page/privacy">Privacy Policy</a><a href="#/page/terms">Terms and Conditions</a><a href="#/page/disclosure">Affiliate Disclosure</a><a id="ig" target="_blank" rel="noopener noreferrer">Instagram</a></p><p id="fd"></p><p><small>© <span id="yr"></span> <span id="fb"></span></small></p></div></footer>
+<footer><div class="wrap"><p><a href="#/page/about">About Us</a><a href="#/page/contact">Contact</a><a href="#/page/privacy">Privacy Policy</a><a href="#/page/terms">Terms and Conditions</a><a href="#/page/disclosure">Affiliate Disclosure</a><a id="ig" target="_blank" rel="noopener noreferrer">Instagram</a></p><p id="fd"></p><p><small>© <span id="yr"></span> <span id="fb"></span></small></p></div></footer><a id="tg" target="_blank" rel="noopener noreferrer">Telegram</a>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 // ===== CONFIG: edit these =====
 const CONFIG={
  brand:"Velmora",
  instagram:"https://www.instagram.com/_.velmora_14?lqvp=MWd0d21rd21wc2NiaA==",
+  telegram:"https://t.me/VelmoraNandha",
  supabaseUrl:"https://fyqskrkplwrbinirtldo.supabase.co",
  supabaseAnonKey:"sb_publishable_l9J_962ftG1QtDFxEtlQuQ_pnKI4Ckn", // public publishable key only
  colors:{ink:"#241757",paper:"#f6f4ff",accent:"#ff7a00",pop:"#e4147a"},
@@ -830,10 +840,12 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const inr=n=>'₹'+Number(n).toLocaleString('en-IN');
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 $('#brand').textContent=CONFIG.brand;$('#fb').textContent=CONFIG.brand;$('#yr').textContent=new Date().getFullYear();
-$('#ig').href=CONFIG.instagram;$('#fd').textContent=DISCLOSURE;
+$('#ig').href=CONFIG.instagram;
+  $('#tg').href=CONFIG.telegram;
+  $('#fd').textContent=DISCLOSURE;
 const sb=CONFIG.supabaseUrl?supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseAnonKey):null;
 let P=[],C=[],ready=false,session=null,query='';
-const setTitle=(t,d)=>{document.title=t?t+' | '+CONFIG.brand:CONFIG.brand;document.querySelector('meta[name=description]').content=d||'Discover products and deals from Indian retailers with Velmora. Confirm current details on the retailer website.';document.querySelector('meta[property="og:title"]').content=document.title;const ogd=document.querySelector('meta[property="og:description"]');if(ogd)ogd.content=d||'Find the deal. Love the savings.';const canon=document.querySelector('link[rel=canonical]');if(canon)canon.href='https://nandha697.github.io/DEALORA/';}
+const setTitle=(t,d)=>{document.title=t?t+' | '+CONFIG.brand:CONFIG.brand;document.querySelector('meta[name=description]').content=d||'Discover products and deals from Indian retailers with Velmora. Confirm current details on the retailer website.';document.querySelector('meta[property="og:title"]').content=document.title;const ogd=document.querySelector('meta[property="og:description"]');if(ogd)ogd.content=d||'Find the deal. Love the savings.';const canon=document.querySelector('link[rel=canonical]');if(canon)canon.href='https://velmorashop.vercel.app/';}
 const okUrl=u=>{try{const x=new URL(u);return x.protocol==='https:'&&CONFIG.allowedHosts.some(h=>x.hostname===h||x.hostname.endsWith('.'+h))}catch{return false}};
 // Price checks older than 30 days are treated as stale; the database has no explicit expiry column.
 const PRICE_CHECK_MAX_AGE_DAYS=30;
@@ -863,6 +875,7 @@ function card(p){
      ${ok
        ? `<a class="btn alt dealora-deal-btn" href="${esc(p.affiliate_url)}" target="_blank" rel="sponsored noopener noreferrer">${freshPrice(p)?'View Deal':'Check Current Price'} <span aria-hidden="true">→</span></a>`
        : `<span class="btn dealora-deal-disabled" aria-disabled="true">Link unavailable</span>`}
+     <button type="button" class="share-product-btn" data-share-id="${esc(p.id)}" aria-label="Share ${esc(p.name)}">↗ Share Product</button>
    </div>
  </article>`;
 }
@@ -946,7 +959,7 @@ function home(){
  <section><h2>All products</h2>${window.velmoraBrowser(l)}</section>${disc()}`;wireBrowser(l)}
 window.velmoraBrowser = function(l){const cats=[...new Set(l.map(p=>p.category).filter(Boolean))].sort();const retailers=[...new Set(l.map(p=>p.retailer).filter(Boolean))].sort();return `<div class="toolbar"><select id="fc" aria-label="Filter by department"><option value="">All departments</option>${cats.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}</select><select id="fr" aria-label="Filter by retailer"><option value="">All retailers</option>${retailers.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}</select><select id="fs" aria-label="Sort products"><option value="new">Newest</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="off">Biggest verified discount</option></select></div><div id="bl">${grid(l)}</div>`}
 function wireBrowser(l){const f=()=>{const c=$('#fc').value,r=$('#fr').value;const filtered=l.filter(p=>(!c||p.category===c)&&(!r||p.retailer===r));const sorted=sorter(filtered,$('#fs').value);$('#bl').innerHTML=sorted.length?grid(sorted):'<div class="note">No products match these filters. Try another department or retailer.</div>'};$('#fc').onchange=f;$('#fr').onchange=f;$('#fs').onchange=f}
-function list(title,l,extra=''){setTitle(title);app.innerHTML=`<section><h2>${esc(title)}</h2>${extra}${browser(l)}</section>${disc()}`;wireBrowser(l)}
+function list(title,l,extra=''){setTitle(title);app.innerHTML=`<section><h2>${esc(title)}</h2>${extra}${window.velmoraBrowser(l)}</section>${disc()}`;wireBrowser(l)}
 function search() {
   const t = query.trim().toLowerCase();
   setTitle(t ? `Search: ${query.trim()}` : 'Search');
@@ -965,7 +978,7 @@ function updateSearchSuggestions(value){
 function detail(id){const p=P.find(x=>x.id===id&&(x.published||session));if(!p){setTitle('Not found');app.innerHTML=`<div class="note"><h2>Product not found</h2><a class="btn" href="#/">Back home</a></div>`;return}
  setTitle(p.name,p.description?.slice(0,150));const ok=p.affiliate_url&&okUrl(p.affiliate_url);
  app.innerHTML=`<section class="detail"><div class="card"><div class="img">${p.image?`<img src="${esc(p.image)}" alt="${esc(p.name)}">`:'No image'}</div></div><div><p class="ret">${esc(p.category)} / ${esc(p.subcategory)}</p><h1>${esc(p.name)}</h1><div class="pr">${inr(p.price)}${verified(p)?`<s>${inr(p.original_price)}</s> ${pct(p)}% off`:''}</div><p>${esc(p.description)}</p><p class="ret">Sold by ${esc(p.retailer)}. ${esc(priceStatus(p))}. Prices and stock may change; confirm on the retailer's website.</p>
- ${ok?`<a class="btn alt" href="${esc(p.affiliate_url)}" target="_blank" rel="sponsored noopener noreferrer">View Deal</a>`:`<span class="btn" aria-disabled="true">Link unavailable</span>${session?'<p class="err">Admin notice: this product has no valid affiliate link.</p>':''}`}${disc()}</div></section>`;const previous=document.getElementById('product-jsonld');if(previous)previous.remove();const jsonLd=document.createElement('script');jsonLd.id='product-jsonld';jsonLd.type='application/ld+json';const productSchema={'@context':'https://schema.org','@type':'Product',name:p.name,description:p.description||'',image:p.image?[p.image]:undefined,brand:p.brand?{'@type':'Brand',name:p.brand}:undefined,offers:{'@type':'Offer',price:Number(p.price),priceCurrency:p.currency||'INR',url:location.href}};jsonLd.textContent=JSON.stringify(productSchema);document.head.appendChild(jsonLd)}
+ ${ok?`<a class="btn alt" href="${esc(p.affiliate_url)}" target="_blank" rel="sponsored noopener noreferrer">View Deal</a>`:`<span class="btn" aria-disabled="true">Link unavailable</span>${session?'<p class="err">Admin notice: this product has no valid affiliate link.</p>':''}`}<button type="button" class="share-product-btn" data-share-id="${esc(p.id)}">↗ Share Product</button>${disc()}</div></section>`;const previous=document.getElementById('product-jsonld');if(previous)previous.remove();const jsonLd=document.createElement('script');jsonLd.id='product-jsonld';jsonLd.type='application/ld+json';const productSchema={'@context':'https://schema.org','@type':'Product',name:p.name,description:p.description||'',image:p.image?[p.image]:undefined,brand:p.brand?{'@type':'Brand',name:p.brand}:undefined,offers:{'@type':'Offer',price:Number(p.price),priceCurrency:p.currency||'INR',url:location.href}};jsonLd.textContent=JSON.stringify(productSchema);document.head.appendChild(jsonLd)}
 const PAGES={
  about:['About Us','Velmora helps visitors discover products and offers listed with links to third-party retailers. Velmora is a product-discovery and affiliate website; it does not sell, ship or fulfil the products shown. Product information is provided for convenience and should be checked with the retailer before purchase.'],
  contact:['Contact',`For website questions or corrections, email ${CONFIG.contact}. When reporting a listing, include the product name and link so we can identify it.`],
@@ -1117,13 +1130,35 @@ name: f.querySelector('[name="name"]').value.trim(),
   published: getField('published').checked
 };
   const {error}=n?await sb.from('products').insert(row):await sb.from('products').update(row).eq('id',row.id);if(error)return msg(error.message,1);await load();admin();msg('Product saved.')}}
+
+// Share the Velmora product page, never the affiliate retailer URL.
+function productShareUrl(id){return new URL('#/p/'+encodeURIComponent(id),'https://velmorashop.vercel.app/').href}
+async function shareProduct(id){
+ const p=P.find(x=>String(x.id)===String(id)&&x.published);if(!p)return;
+ const url=productShareUrl(p.id);
+ const title=p.name+' | Velmora';
+ const message=p.name+' — '+inr(p.price)+' on Velmora. Check current price at the retailer.';
+ if(navigator.share){try{await navigator.share({title,text:message,url});return}catch(e){if(e.name==='AbortError')return}}
+ const old=document.querySelector('#velmora-share-dialog');if(old)old.remove();
+ const dlg=document.createElement('dialog');dlg.id='velmora-share-dialog';dlg.className='share-dialog';
+ dlg.innerHTML='<button class="share-dialog-close" aria-label="Close">×</button><h2>Share this product</h2><p></p><div class="share-actions"><a id="share-wa" target="_blank" rel="noopener noreferrer">WhatsApp</a><a id="share-tg" target="_blank" rel="noopener noreferrer">Telegram</a><button id="share-copy" type="button">Copy link</button></div>';
+ dlg.querySelector('p').textContent=message;
+ dlg.querySelector('#share-wa').href='https://wa.me/?text='+encodeURIComponent(message+' '+url);
+ dlg.querySelector('#share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(message);
+ dlg.querySelector('.share-dialog-close').onclick=()=>dlg.close();
+ dlg.querySelector('#share-copy').onclick=async()=>{try{await navigator.clipboard.writeText(url);dlg.querySelector('#share-copy').textContent='✓ Copied!'}catch{prompt('Copy product link:',url)}};
+ dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+ dlg.addEventListener('close',()=>dlg.remove());document.body.appendChild(dlg);dlg.showModal();
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-share-id]');if(b){e.preventDefault();shareProduct(b.dataset.shareId)}});
+
 // ---------- Router ----------
 async function route(){
  const oldLd=document.getElementById('product-jsonld');if(oldLd)oldLd.remove();
  if(!ready){app.innerHTML='<div class="spin" role="status" aria-label="Loading"></div>';if(!await load())return}
  $('#nav').classList.remove('show');$('#dm').classList.remove('open');window.scrollTo(0,0);
  const [,a,b]=location.hash.split('/');const l=pub();
- if(query.trim()&&a!=='admin')return search();
+ if(query.trim()&&a!=='admin'&&a!=='p')return search();
  if(!a)return home();
  if(a==='admin')return admin();
  if(a==='all')return list('All products',l);
