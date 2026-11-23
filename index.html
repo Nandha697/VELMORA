@@ -817,7 +817,8 @@ a:focus-visible {
  <nav id="nav"><a href="#/">Home</a><div class="menu" id="dm"><button id="dmb" aria-haspopup="true">Departments ▾</button><div class="dd" id="dd"></div></div><a href="#/deals">Today's Deals</a><a href="#/trending">Trending</a></nav>
 </div></header>
 <main id="app" class="wrap" aria-live="polite"></main>
-<footer><div class="wrap"><p><a href="#/page/about">About Us</a><a href="#/page/contact">Contact</a><a href="#/page/privacy">Privacy Policy</a><a href="#/page/terms">Terms and Conditions</a><a href="#/page/disclosure">Affiliate Disclosure</a><a id="ig" target="_blank" rel="noopener noreferrer">Instagram</a></p><p id="fd"></p><p><small>© <span id="yr"></span> <span id="fb"></span></small></p></div></footer><a id="tg" target="_blank" rel="noopener noreferrer">Telegram</a>
+<footer><div class="wrap"><p><a href="#/page/about">About Us</a><a href="#/page/contact">Contact</a><a href="#/page/privacy">Privacy Policy</a><a href="#/page/terms">Terms and Conditions</a><a href="#/page/disclosure">Affiliate Disclosure</a><a id="ig" target="_blank" rel="noopener noreferrer">Instagram</a>
+<a id="tg" target="_blank" rel="noopener noreferrer">Telegram</a>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 // ===== CONFIG: edit these =====
@@ -841,8 +842,8 @@ const inr=n=>'₹'+Number(n).toLocaleString('en-IN');
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 $('#brand').textContent=CONFIG.brand;$('#fb').textContent=CONFIG.brand;$('#yr').textContent=new Date().getFullYear();
 $('#ig').href=CONFIG.instagram;
-  $('#tg').href=CONFIG.telegram;
-  $('#fd').textContent=DISCLOSURE;
+$('#tg').href=CONFIG.telegram;
+$('#fd').textContent=DISCLOSURE;
 const sb=CONFIG.supabaseUrl?supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseAnonKey):null;
 let P=[],C=[],ready=false,session=null,query='';
 const setTitle=(t,d)=>{document.title=t?t+' | '+CONFIG.brand:CONFIG.brand;document.querySelector('meta[name=description]').content=d||'Discover products and deals from Indian retailers with Velmora. Confirm current details on the retailer website.';document.querySelector('meta[property="og:title"]').content=document.title;const ogd=document.querySelector('meta[property="og:description"]');if(ogd)ogd.content=d||'Find the deal. Love the savings.';const canon=document.querySelector('link[rel=canonical]');if(canon)canon.href='https://velmorashop.vercel.app/';}
