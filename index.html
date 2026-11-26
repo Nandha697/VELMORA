@@ -954,6 +954,25 @@ if ($('#fd')) {
 }
 const sb=CONFIG.supabaseUrl?supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseAnonKey):null;
 let P=[],C=[],ready=false,session=null,query='';
+  async function trackProductClick(productId) {
+    if (!sb || !productId) return;
+
+    try {
+        const { error } = await sb.rpc(
+            'track_product_click',
+            {
+                p_product_id: productId
+            }
+        );
+
+        if (error) {
+            console.warn('Click tracking failed:', error.message);
+        }
+
+    } catch (error) {
+        console.warn('Click tracking error:', error);
+    }
+}
 const setTitle=(t,d)=>{document.title=t?t+' | '+CONFIG.brand:CONFIG.brand;document.querySelector('meta[name=description]').content=d||'Discover products and deals from Indian retailers with Velmora. Confirm current details on the retailer website.';document.querySelector('meta[property="og:title"]').content=document.title;const ogd=document.querySelector('meta[property="og:description"]');if(ogd)ogd.content=d||'Find the deal. Love the savings.';const canon=document.querySelector('link[rel=canonical]');if(canon)canon.href='https://velmorashop.vercel.app/';}
 const okUrl=u=>{try{const x=new URL(u);return x.protocol==='https:'&&CONFIG.allowedHosts.some(h=>x.hostname===h||x.hostname.endsWith('.'+h))}catch{return false}};
 // Price checks older than 30 days are treated as stale; the database has no explicit expiry column.
