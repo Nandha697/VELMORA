@@ -820,6 +820,7 @@ a:focus-visible {
 <footer><div class="wrap"><p><a href="#/page/about">About Us</a><a href="#/page/contact">Contact</a><a href="#/page/privacy">Privacy Policy</a><a href="#/page/terms">Terms and Conditions</a><a href="#/page/disclosure">Affiliate Disclosure</a><a id="ig" target="_blank" rel="noopener noreferrer">Instagram</a>
 <a id="tg" target="_blank" rel="noopener noreferrer">Telegram</a>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script>
 // ===== CONFIG: edit these =====
 const CONFIG={
@@ -1169,7 +1170,12 @@ async function admin(){setTitle('Admin');
  if(!session){app.innerHTML=`<form class="form" id="lf" style="max-width:380px;margin:30px auto"><h2>Admin login</h2><label>Email<input name="e" type="email" required autocomplete="username"></label><label>Password<input name="p" type="password" required autocomplete="current-password"></label><button class="btn">Log in</button><p class="err" id="le"></p></form>`;
   $('#lf').onsubmit=async e=>{e.preventDefault();const f=e.target;const {data,error}=await sb.auth.signInWithPassword({email:f.e.value,password:f.p.value});if(error)return $('#le').textContent=error.message;session=data.session;route()};return}
  if(!await isAdmin()){app.innerHTML=`<div class="note err">This account is not an administrator.</div><button class="btn" id="lo">Log out</button>`;$('#lo').onclick=out;return}
- app.innerHTML=`<section><div class="toolbar"><h2 style="margin:0;flex:1">Admin dashboard</h2><button class="btn alt" id="nw">Add product</button><button class="btn ghost" id="nc">Add category</button><button class="btn" id="lo">Log out</button></div><div id="msg"></div>
+ app.innerHTML=`<section><div class="toolbar"><h2 style="margin:0;flex:1">Admin dashboard</h2><button class="btn alt" id="nw">Add product</button>
+
+<button class="btn alt" id="bulk"
+style="background:#16803c;color:white;">
+📥 Bulk Upload
+</button><button class="btn ghost" id="nc">Add category</button><button class="btn" id="lo">Log out</button></div><div id="msg"></div>
 
 <div class="toolbar">
     <select id="verifyFilter">
