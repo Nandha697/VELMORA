@@ -888,7 +888,6 @@ a:focus-visible {
     margin-bottom: 20px;
 }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.8/chart.umd.min.js"></script>
 </head><body>
 <header><div class="wrap bar">
 <a class="logo" href="#/">
@@ -1874,83 +1873,91 @@ $('#addSale').onclick = addSaleForm;
 
     }
 }
-  async function loadDailyClicksChart() {
+async function loadDailyClicksChart() {
 
-    const canvas = $('#dailyClicksChart');
+    const box = $('#dailyClicksChart');
 
-    if (!canvas) return;
+    if (!box) return;
 
     try {
 
-        const { data, error } = await sb.rpc(
-            'get_daily_clicks'
-        );
+        const { data, error } = await sb.rpc('get_daily_clicks');
 
         if (error) throw error;
-
-        if (!canvas.isConnected) return;
+        if (!box.isConnected) return;
 
         const rows = data || [];
 
-        new Chart(canvas, {
+        const max = Math.max(
+            1,
+            ...rows.map(r => Number(r.total_clicks))
+        );
 
-            type: 'line',
+        box.innerHTML = `
+            <div style="
+                display:flex;
+                align-items:flex-end;
+                gap:5px;
+                height:250px;
+                overflow-x:auto;
+                padding:10px;
+                border-bottom:2px solid #ddd;
+            ">
 
-            data: {
+                ${rows.map(r => {
 
-                labels: rows.map(r => r.click_date),
+                    const clicks = Number(r.total_clicks);
+                    const height = clicks / max * 200;
 
-                datasets: [{
+                    return `
+                        <div style="
+                            flex:1;
+                            min-width:18px;
+                            text-align:center;
+                        ">
 
-                    label: 'Product Clicks',
+                            <div style="
+                                font-size:11px;
+                                font-weight:bold;
+                                color:#6c3bff;
+                            ">
+                                ${clicks}
+                            </div>
 
-                    data: rows.map(r => Number(r.total_clicks)),
+                            <div
+                                title="${esc(r.click_date)}: ${clicks} clicks"
+                                style="
+                                    height:${Math.max(2, height)}px;
+                                    background:linear-gradient(
+                                        #6c3bff,#43228e
+                                    );
+                                    border-radius:5px 5px 0 0;
+                                ">
+                            </div>
 
-                    borderColor: '#6c3bff',
+                            <div style="
+                                font-size:10px;
+                                margin-top:6px;
+                                color:#64748b;
+                            ">
+                                ${esc(r.click_date.slice(8))}
+                            </div>
 
-                    backgroundColor: 'rgba(108,59,255,0.12)',
+                        </div>
+                    `;
 
-                    fill: true,
+                }).join('')}
 
-                    tension: 0.35,
-
-                    borderWidth: 3,
-
-                    pointRadius: 4,
-
-                    pointHoverRadius: 7
-
-                }]
-
-            },
-
-            options: {
-
-                responsive: true,
-
-                maintainAspectRatio: false,
-
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
-
-                scales: {
-
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-
-                }
-
-            }
-
-        });
+            </div>
+        `;
 
     } catch (error) {
+
+        box.textContent = 'Graph unavailable: ' + error.message;
+
+    }
+}
+  catch (error) {
 
         console.error('Chart error:', error);
 
@@ -2018,7 +2025,7 @@ async function analyticsDashboard() {
     <p>Last 30 Days · Indian Standard Time</p>
 
     <div style="position:relative;height:300px;">
-        <canvas id="dailyClicksChart"></canvas>
+       <div id="dailyClicksChart"></div>
     </div>
 
 </div>
