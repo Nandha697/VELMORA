@@ -1169,8 +1169,21 @@ async function admin(){setTitle('Admin');
  if(!session){app.innerHTML=`<form class="form" id="lf" style="max-width:380px;margin:30px auto"><h2>Admin login</h2><label>Email<input name="e" type="email" required autocomplete="username"></label><label>Password<input name="p" type="password" required autocomplete="current-password"></label><button class="btn">Log in</button><p class="err" id="le"></p></form>`;
   $('#lf').onsubmit=async e=>{e.preventDefault();const f=e.target;const {data,error}=await sb.auth.signInWithPassword({email:f.e.value,password:f.p.value});if(error)return $('#le').textContent=error.message;session=data.session;route()};return}
  if(!await isAdmin()){app.innerHTML=`<div class="note err">This account is not an administrator.</div><button class="btn" id="lo">Log out</button>`;$('#lo').onclick=out;return}
- app.innerHTML=`<section><div class="toolbar"><h2 style="margin:0;flex:1">Admin dashboard</h2><button class="btn alt" id="nw">Add product</button><button class="btn ghost" id="nc">Add category</button><button class="btn" id="lo">Log out</button></div><div id="msg"></div><div id="ed"></div>
- <div class="tw"><table><tr><th>Name</th><th>Category</th><th>Price</th><th>Link</th><th>Status</th><th>Last Verified</th><th>Actions</th></tr>${P.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.subcategory)}</td><td>${inr(p.price)}</td><td>
+ app.innerHTML=`<section><div class="toolbar"><h2 style="margin:0;flex:1">Admin dashboard</h2><button class="btn alt" id="nw">Add product</button><button class="btn ghost" id="nc">Add category</button><button class="btn" id="lo">Log out</button></div><div id="msg"></div>
+
+<div class="toolbar">
+    <select id="verifyFilter">
+        <option value="all">All Products</option>
+        <option value="today">Verified Today</option>
+        <option value="pending">Pending Verification</option>
+        <option value="never">Not Verified</option>
+        <option value="7days">Older Than 7 Days</option>
+        <option value="30days">Older Than 30 Days</option>
+    </select>
+</div>
+
+<div id="ed"></div>
+ <div class="tw"><table><tr><th>Name</th><th>Category</th><th>Price</th><th>Link</th><th>Status</th><th>Last Verified</th><th>Actions</th></tr>${P.map(p=>`<tr data-verified="${esc(String(p.last_verified || '').slice(0,10))}">><td>${esc(p.name)}</td><td>${esc(p.subcategory)}</td><td>${inr(p.price)}</td><td>
 ${p.affiliate_url && okUrl(p.affiliate_url)
 ? `<a class="chip"
 href="${esc(p.affiliate_url)}"
@@ -1185,6 +1198,42 @@ style="display:inline-block;background:#eee7ff;color:#6033db;">
 <button class="chip" data-v="${esc(p.id)}" style="background:#e8f5e9;color:#16803c;border-color:#16803c;">✓ Verify Today</button>
 <button class="chip" data-e="${esc(p.id)}">Edit</button> <button class="chip" data-d="${esc(p.id)}">Delete</button></td></tr>`).join('')}</table></div></section>`;
  $('#lo').onclick=out;$('#nw').onclick=()=>form();$('#nc').onclick=catForm;
+                       $('#verifyFilter').onchange = function () {
+
+    const filter = this.value;
+
+    const today = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(new Date());
+
+    app.querySelectorAll('tr[data-verified]').forEach(row => {
+
+        const date = row.dataset.verified;
+
+        const age = date
+            ? (Date.parse(today) - Date.parse(date)) / 86400000
+            : Infinity;
+
+        let show = true;
+
+        if (filter === 'today') {
+            show = date === today;
+        } else if (filter === 'pending') {
+            show = date !== today;
+        } else if (filter === 'never') {
+            show = !date;
+        } else if (filter === '7days') {
+            show = !!date && age > 7;
+        } else if (filter === '30days') {
+            show = !!date && age > 30;
+        }
+
+        row.style.display = show ? '' : 'none';
+    });
+};
  app.querySelectorAll('[data-v]').forEach(b => {
     b.onclick = async () => {
 
