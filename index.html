@@ -1230,8 +1230,168 @@ async function isAdmin(){
         a.href = url;
         a.download = 'VELMORA-Product-Template.csv';
         a.click();
+setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
 
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    let bulkProducts = [];
+
+    $('#bulkFile').onchange = () => {
+        bulkProducts = [];
+        $('#saveBulk').disabled = true;
+        $('#bulkPreview').innerHTML = '';
+    };
+
+    $('#previewCSV').onclick = () => {
+
+        const file = $('#bulkFile').files[0];
+
+        bulkProducts = [];
+        $('#saveBulk').disabled = true;
+        $('#bulkPreview').innerHTML = '';
+
+        if (!file) {
+            return msg('Please select a CSV file.', 1);
+        }
+
+        Papa.parse(file, {
+
+            header: true,
+            skipEmptyLines: 'greedy',
+            transformHeader: h => h.trim(),
+
+            complete: function(results) {
+
+                const errors = [];
+                const seen = new Set(
+                    P.map(p => p.affiliate_url).filter(Boolean)
+                );
+
+                if (results.errors.length) {
+                    return msg('Invalid CSV format.', 1);
+                }
+
+                results.data.forEach((r, i) => {
+
+                    const row = i + 2;
+                    const name = (r.name || '').trim();
+                    const category = (r.category || '').trim();
+                    const subcategory = (r.subcategory || '').trim();
+                    const retailer = (r.retailer || '').trim();
+                    const link = (r.affiliate_url || '').trim();
+                    const price = Number(r.price);
+                    const op = (r.original_price || '').trim();
+                    const original = op ? Number(op) : null;
+
+                    if (!name || !category || !subcategory || !retailer) {
+                        errors.push(`Row ${row}: Missing required details`);
+                        return;
+                    }
+
+                    if (!String(r.price || '').trim() ||
+                        !Number.isFinite(price) || price <= 0) {
+                        errors.push(`Row ${row}: Invalid price`);
+                        return;
+                    }
+
+                    if (original !== null &&
+                        (!Number.isFinite(original) || original < price)) {
+                        errors.push(`Row ${row}: Invalid original price`);
+                        return;
+                    }
+
+                    if (!okUrl(link)) {
+                        errors.push(`Row ${row}: Invalid affiliate link`);
+                        return;
+                    }
+
+                    if (seen.has(link)) {
+                        errors.push(`Row ${row}: Duplicate affiliate link`);
+                        return;
+                    }
+
+                    if (!C.some(c =>
+                        c.department === category &&
+                        c.name === subcategory
+                    )) {
+                        errors.push(`Row ${row}: Invalid category`);
+                        return;
+                    }
+
+                    const image = (r.image || '').trim();
+
+                    if (image && !/^https:\/\//i.test(image)) {
+                        errors.push(`Row ${row}: Invalid image URL`);
+                        return;
+                    }
+
+                    seen.add(link);
+
+                    bulkProducts.push({
+
+                        id: 'product-' + crypto.randomUUID(),
+
+                        name: name,
+                        category: category,
+                        subcategory: subcategory,
+                        price: price,
+                        original_price: original,
+                        currency: 'INR',
+                        retailer: retailer,
+                        image: image,
+                        description: (r.description || '').trim(),
+                        affiliate_url: link,
+                        last_verified: null,
+                        featured: false,
+                        published: false
+
+                    });
+                });
+
+                $('#bulkPreview').innerHTML = `
+
+                    <p class="ok">
+                        Valid Products: ${bulkProducts.length}
+                    </p>
+
+                    <p class="err">
+                        Invalid Products: ${errors.length}
+                    </p>
+
+                    ${errors.map(e =>
+                        `<p class="err">${esc(e)}</p>`
+                    ).join('')}
+
+                    <div class="tw">
+                    <table>
+
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Retailer</th>
+                        </tr>
+
+                        ${bulkProducts.map(p => `
+                            <tr>
+                                <td>${esc(p.name)}</td>
+                                <td>${esc(p.subcategory)}</td>
+                                <td>${inr(p.price)}</td>
+                                <td>${esc(p.retailer)}</td>
+                            </tr>
+                        `).join('')}
+
+                    </table>
+                    </div>
+                `;
+
+                msg('Preview completed. Review products before saving.');
+            },
+
+            error: function(error) {
+                msg(error.message, 1);
+            }
+
+        });
     };
 }
 async function admin(){setTitle('Admin');
