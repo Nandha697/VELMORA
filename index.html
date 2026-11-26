@@ -1642,35 +1642,7 @@ async function bulkUpdateStatus(published) {
 
         msg(error.message, 1);
         updateSelectedCount();
-      $('#adminSearch').addEventListener('input', () => {
-
-    const keyword = $('#adminSearch').value
-        .trim()
-        .toLowerCase();
-
-    productCheckboxes().forEach(cb => {
-
-        const p = P.find(x => x.id === cb.value);
-
-        if (!p) return;
-
-        const searchable = [
-            p.name,
-            p.category,
-            p.subcategory,
-            p.retailer
-        ].join(' ').toLowerCase();
-
-        cb.checked = false;
-
-        cb.closest('tr').hidden =
-            !searchable.includes(keyword);
-
-    });
-
-    updateSelectedCount();
-
-});
+     
 
     }
 }
@@ -1732,7 +1704,35 @@ selectAll.onchange = () => {
 productCheckboxes().forEach(cb => {
     cb.onchange = updateSelectedCount;
 });
+$('#adminSearch').addEventListener('input', () => {
 
+    const keyword = $('#adminSearch').value
+        .trim()
+        .toLowerCase();
+
+    productCheckboxes().forEach(cb => {
+
+        const p = P.find(x => x.id === cb.value);
+
+        if (!p) return;
+
+        const searchable = [
+            p.name,
+            p.category,
+            p.subcategory,
+            p.retailer
+        ].join(' ').toLowerCase();
+
+        cb.checked = false;
+
+        cb.closest('tr').hidden =
+            !searchable.includes(keyword);
+
+    });
+
+    updateSelectedCount();
+
+});
 $('#verifyFilter').addEventListener('change', () => {
 
     productCheckboxes().forEach(cb => {
