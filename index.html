@@ -1178,9 +1178,15 @@ const msg=(t,e)=>{$('#msg').innerHTML=`<p class="${e?'err':'ok'}">${esc(t)}</p>`
 async function out(){await sb.auth.signOut();session=null;location.hash='#/'}
 function catForm(){$('#ed').innerHTML=`<form class="form" id="cf"><h3>New category</h3><div class="two"><label>Department<input name="d" list="dl" required></label><label>Subcategory<input name="n" required></label></div><datalist id="dl">${[...new Set(C.map(c=>c.department))].map(d=>`<option>${esc(d)}`).join('')}</datalist><label><span><input type="checkbox" name="v"> Keep visible when empty</span></label><button class="btn">Save category</button></form>`;
  $('#cf').onsubmit=async e=>{e.preventDefault();const f=e.target;const {error}=await sb.from('categories').insert({department:f.d.value.trim(),name:f.n.value.trim(),always_visible:f.v.checked});if(error)return msg(error.message,1);await load();admin();msg('Category added.')}}
-function form(p){const n=!p;p=p|| if (n) {
-    p.id = 'product-' + crypto.randomUUID();
-}{currency:'INR',published:true};const deps=[...new Set(C.map(c=>c.department))];
+function form(p) {
+    const n = !p;
+    p = p || {currency:'INR', published:true};
+
+    if (n) {
+        p.id = 'product-' + crypto.randomUUID();
+    }
+
+    const deps = [...new Set(C.map(c => c.department))];
  $('#ed').innerHTML=`<form class="form" id="pf"><h3>${n?'Add':'Edit'} product</h3>
  <div class="two"><label>Product ID<input name="id" value="${esc(p.id||'')}" ${n?'placeholder="Generating..." readonly':'readonly'} pattern="[a-z0-9\\-]{3,60}" required></label>
  <label>Product Name<input name="name" value="${esc(p.name||'')}" required></label>
