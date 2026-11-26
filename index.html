@@ -1180,7 +1180,13 @@ function catForm(){$('#ed').innerHTML=`<form class="form" id="cf"><h3>New catego
  $('#cf').onsubmit=async e=>{e.preventDefault();const f=e.target;const {error}=await sb.from('categories').insert({department:f.d.value.trim(),name:f.n.value.trim(),always_visible:f.v.checked});if(error)return msg(error.message,1);await load();admin();msg('Category added.')}}
 function form(p) {
     const n = !p;
-    p = p || {currency:'INR', published:true};
+    p = p || {
+    currency: 'INR',
+    published: true,
+    last_verified: new Date().toLocaleDateString('en-CA', {
+        timeZone: 'Asia/Kolkata'
+    })
+};
 
     if (n) {
         p.id = 'product-' + crypto.randomUUID();
