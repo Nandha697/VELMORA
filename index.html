@@ -1234,6 +1234,56 @@ setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
 
     let bulkProducts = [];
+    $('#saveBulk').onclick = async () => {
+
+    if (!bulkProducts.length) {
+        return msg('No valid products to save.', 1);
+    }
+
+    if (!confirm(
+        `Import ${bulkProducts.length} products into VELMORA?`
+    )) {
+        return;
+    }
+
+    const btn = $('#saveBulk');
+
+    btn.disabled = true;
+    btn.textContent = 'Importing Products...';
+
+    $('#previewCSV').disabled = true;
+    $('#bulkFile').disabled = true;
+    $('#closeBulk').disabled = true;
+
+    try {
+
+        const { error } = await sb
+            .from('products')
+            .insert(bulkProducts);
+
+        if (error) throw error;
+
+        const count = bulkProducts.length;
+
+        bulkProducts = [];
+
+        await load();
+        await admin();
+
+        msg(`${count} products imported successfully!`);
+
+    } catch (error) {
+
+        msg('Import failed: ' + error.message, 1);
+
+        btn.disabled = false;
+        btn.textContent = 'Save All Products';
+
+        $('#previewCSV').disabled = false;
+        $('#bulkFile').disabled = false;
+        $('#closeBulk').disabled = false;
+    }
+};
 
     $('#bulkFile').onchange = () => {
         bulkProducts = [];
@@ -1384,7 +1434,10 @@ setTimeout(() => URL.revokeObjectURL(url), 1000);
                     </div>
                 `;
 
-                msg('Preview completed. Review products before saving.');
+             $('#saveBulk').disabled =
+    bulkProducts.length === 0 || errors.length > 0;
+
+msg('Preview completed. Review products before saving.');
             },
 
             error: function(error) {
