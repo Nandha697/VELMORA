@@ -1956,6 +1956,75 @@ msg('Preview completed. Review products before saving.');
 
     }
 }
+  async function loadTrendingProducts() {
+
+    const box = $('#trendingAnalytics');
+
+    if (!box) return;
+
+    try {
+
+        const { data, error } = await sb.rpc(
+            'get_trending_products'
+        );
+
+        if (error) throw error;
+
+        if (!box.isConnected) return;
+
+        const rows = data || [];
+
+        if (!rows.length) {
+
+            box.innerHTML = '<p>No trending products yet.</p>';
+
+            return;
+        }
+
+        box.innerHTML = `
+            <div class="tw">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Product</th>
+                            <th>Retailer</th>
+                            <th>Clicks</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        ${rows.map((p, i) => `
+                            <tr>
+                                <td>
+                                    ${['🥇','🥈','🥉'][i] || i + 1}
+                                </td>
+
+                                <td>${esc(p.product_name)}</td>
+
+                                <td>${esc(p.retailer)}</td>
+
+                                <td>
+                                    <strong>
+                                        ${Number(p.total_clicks)}
+                                    </strong>
+                                </td>
+                            </tr>
+                        `).join('')}
+
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+    } catch (error) {
+
+        box.textContent =
+            'Trending products unavailable: ' + error.message;
+
+    }
+}
 async function loadDailyClicksChart() {
 
     const box = $('#dailyClicksChart');
@@ -2120,7 +2189,15 @@ async function analyticsDashboard() {
                     ${Number(products[0]?.total_clicks || 0)} clicks
                 </p>
             </div>
+<div class="analytics-chart-box">
 
+    <h3>🔥 Trending Products – Last 7 Days</h3>
+
+    <div id="trendingAnalytics">
+        Loading trending products...
+    </div>
+
+</div>
             <h3>🔥 Top 10 Most Clicked Products</h3>
 
             <div class="tw">
@@ -2177,6 +2254,7 @@ async function analyticsDashboard() {
         $('#refreshAnalytics').onclick = analyticsDashboard;
       loadDailyClicksChart();
       loadCategoryRetailerAnalytics();
+      loadTrendingProducts();
 
         $('#closeAnalytics').onclick = () => {
             panel.innerHTML = '';
