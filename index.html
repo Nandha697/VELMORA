@@ -1538,6 +1538,15 @@ style="background:#16803c;color:white;">
     border:1px solid #ddd;
     border-radius:10px;
     min-width:240px;">
+    <select id="adminDepartment">
+    <option value="all">All Departments</option>
+</select>
+
+<select id="adminStatus">
+    <option value="all">All Status</option>
+    <option value="published">Published</option>
+    <option value="hidden">Hidden</option>
+</select>
     <select id="verifyFilter">
         <option value="all">All Products</option>
         <option value="today">Verified Today</option>
@@ -1704,11 +1713,22 @@ selectAll.onchange = () => {
 productCheckboxes().forEach(cb => {
     cb.onchange = updateSelectedCount;
 });
-$('#adminSearch').addEventListener('input', () => {
+                       const departments = [...new Set(
+    C.map(c => c.department)
+)].sort();
+
+$('#adminDepartment').innerHTML =
+    '<option value="all">All Departments</option>' +
+    departments.map(d =>
+        `<option value="${esc(d)}">${esc(d)}</option>`
+    ).join('');
+function applyAdminFilters() {
 
     const keyword = $('#adminSearch').value
-        .trim()
-        .toLowerCase();
+        .trim().toLowerCase();
+
+    const department = $('#adminDepartment').value;
+    const status = $('#adminStatus').value;
 
     productCheckboxes().forEach(cb => {
 
@@ -1723,13 +1743,35 @@ $('#adminSearch').addEventListener('input', () => {
             p.retailer
         ].join(' ').toLowerCase();
 
+        const searchMatch =
+            searchable.includes(keyword);
+
+        const departmentMatch =
+            department === 'all' ||
+            p.category === department;
+
+        const statusMatch =
+            status === 'all' ||
+            (status === 'published' && p.published) ||
+            (status === 'hidden' && !p.published);
+
         cb.checked = false;
 
         cb.closest('tr').hidden =
-            !searchable.includes(keyword);
+            !(searchMatch &&
+              departmentMatch &&
+              statusMatch);
 
     });
 
+    updateSelectedCount();
+}
+
+$('#adminSearch').oninput = applyAdminFilters;
+
+$('#adminDepartment').onchange = applyAdminFilters;
+
+$('#adminStatus').onchange = applyAdminFilters;
     updateSelectedCount();
 
 });
