@@ -1533,6 +1533,10 @@ style="background:#16803c;color:white;">
     style="background:#dc2626;color:white;" disabled>
     Delete Selected
 </button>
+<button class="btn alt" id="bulkVerify"
+    style="background:#0d9488;color:white;" disabled>
+    ✓ Verify Selected
+</button>
 <span id="selectedCount">0 selected</span>
 <input type="search"
     id="adminSearch"
@@ -1618,6 +1622,7 @@ function updateSelectedCount() {
     $('#bulkPublish').disabled = count === 0;
     $('#bulkUnpublish').disabled = count === 0;
   $('#bulkDelete').disabled = count === 0;
+  $('#bulkVerify').disabled = count === 0;
 }
 async function bulkUpdateStatus(published) {
 
@@ -1662,6 +1667,53 @@ async function bulkUpdateStatus(published) {
 $('#bulkPublish').onclick = () => bulkUpdateStatus(true);
 
 $('#bulkUnpublish').onclick = () => bulkUpdateStatus(false);
+                       $('#bulkVerify').onclick = async () => {
+
+    const ids = productCheckboxes()
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+    if (!ids.length) return;
+
+    if (!confirm(
+        `Have you checked the current price and offer of all ${ids.length} selected products?`
+    )) return;
+
+    const today = new Date().toLocaleDateString(
+        'en-CA',
+        { timeZone: 'Asia/Kolkata' }
+    );
+
+    const btn = $('#bulkVerify');
+
+    btn.disabled = true;
+    btn.textContent = 'Verifying...';
+
+    try {
+
+        const { data, error } = await sb
+            .from('products')
+            .update({ last_verified: today })
+            .in('id', ids)
+            .select('id');
+
+        if (error) throw error;
+
+        await load();
+        await admin();
+
+        msg(`${data.length} products verified successfully!`);
+
+    } catch (error) {
+
+        msg('Verification failed: ' + error.message, 1);
+
+        btn.textContent = '✓ Verify Selected';
+
+        updateSelectedCount();
+
+    }
+};
                        $('#exportCSV').onclick = () => {
 
     const selectedIds = productCheckboxes()
