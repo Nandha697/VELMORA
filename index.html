@@ -1729,6 +1729,14 @@ function applyAdminFilters() {
 
     const department = $('#adminDepartment').value;
     const status = $('#adminStatus').value;
+  const filter = $('#verifyFilter').value;
+
+const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+}).format(new Date());
 
     productCheckboxes().forEach(cb => {
 
@@ -1757,11 +1765,31 @@ function applyAdminFilters() {
 
         cb.checked = false;
 
-        cb.closest('tr').hidden =
-            !(searchMatch &&
-              departmentMatch &&
-              statusMatch);
+     const date = String(p.last_verified || '').slice(0, 10);
 
+const age = date
+    ? (Date.parse(today) - Date.parse(date)) / 86400000
+    : Infinity;
+
+let verificationMatch = true;
+
+if (filter === 'today') {
+    verificationMatch = date === today;
+} else if (filter === 'pending') {
+    verificationMatch = date !== today;
+} else if (filter === 'never') {
+    verificationMatch = !date;
+} else if (filter === '7days') {
+    verificationMatch = !!date && age > 7;
+} else if (filter === '30days') {
+    verificationMatch = !!date && age > 30;
+}
+
+cb.closest('tr').hidden =
+    !(searchMatch &&
+      departmentMatch &&
+      statusMatch &&
+      verificationMatch);
     });
 
     updateSelectedCount();
@@ -1773,54 +1801,11 @@ $('#adminDepartment').onchange = applyAdminFilters;
 
 $('#adminStatus').onchange = applyAdminFilters;
    
-$('#verifyFilter').addEventListener('change', () => {
+$('#verifyFilter').onchange = applyAdminFilters;
 
-    productCheckboxes().forEach(cb => {
-        cb.checked = false;
-    });
+applyAdminFilters();
 
-    setTimeout(updateSelectedCount, 0);
-});
-
-updateSelectedCount();
-                     
-                       $('#verifyFilter').onchange = function () {
-
-    const filter = this.value;
-
-    const today = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Kolkata',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).format(new Date());
-
-    app.querySelectorAll('tr[data-verified]').forEach(row => {
-
-        const date = row.dataset.verified;
-
-        const age = date
-            ? (Date.parse(today) - Date.parse(date)) / 86400000
-            : Infinity;
-
-        let show = true;
-
-        if (filter === 'today') {
-            show = date === today;
-        } else if (filter === 'pending') {
-            show = date !== today;
-        } else if (filter === 'never') {
-            show = !date;
-        } else if (filter === '7days') {
-            show = !!date && age > 7;
-        } else if (filter === '30days') {
-            show = !!date && age > 30;
-        }
-
-        row.style.display = show ? '' : 'none';
-    });
-};
- app.querySelectorAll('[data-v]').forEach(b => {
+app.querySelectorAll('[data-v]').forEach(b => {
     b.onclick = async () => {
 
         if (!confirm('Have you checked the current product price and offer?')) return;
