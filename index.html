@@ -1596,7 +1596,48 @@ function updateSelectedCount() {
     $('#bulkPublish').disabled = count === 0;
     $('#bulkUnpublish').disabled = count === 0;
 }
+async function bulkUpdateStatus(published) {
 
+    const ids = productCheckboxes()
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+    if (!ids.length) return;
+
+    const action = published ? 'publish' : 'hide';
+
+    if (!confirm(`${action} ${ids.length} selected products?`)) {
+        return;
+    }
+
+    $('#bulkPublish').disabled = true;
+    $('#bulkUnpublish').disabled = true;
+
+    try {
+
+        const { error } = await sb
+            .from('products')
+            .update({ published: published })
+            .in('id', ids);
+
+        if (error) throw error;
+
+        await load();
+        await admin();
+
+        msg(`${ids.length} products ${published ? 'published' : 'hidden'} successfully!`);
+
+    } catch (error) {
+
+        msg(error.message, 1);
+        updateSelectedCount();
+
+    }
+}
+
+$('#bulkPublish').onclick = () => bulkUpdateStatus(true);
+
+$('#bulkUnpublish').onclick = () => bulkUpdateStatus(false);
 selectAll.onchange = () => {
 
     visibleCheckboxes().forEach(cb => {
