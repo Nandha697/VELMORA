@@ -840,10 +840,29 @@ const $=s=>document.querySelector(s),app=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const inr=n=>'₹'+Number(n).toLocaleString('en-IN');
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-$('#brand').textContent=CONFIG.brand;$('#fb').textContent=CONFIG.brand;$('#yr').textContent=new Date().getFullYear();
-$('#ig').href=CONFIG.instagram;
-$('#tg').href=CONFIG.telegram;
-$('#fd').textContent=DISCLOSURE;
+if ($('#brand')) {
+    $('#brand').textContent = CONFIG.brand;
+}
+
+if ($('#fb')) {
+    $('#fb').textContent = CONFIG.brand;
+}
+
+if ($('#yr')) {
+    $('#yr').textContent = new Date().getFullYear();
+}
+
+if ($('#ig')) {
+    $('#ig').href = CONFIG.instagram || '#';
+}
+
+if ($('#tg')) {
+    $('#tg').href = CONFIG.telegram || '#';
+}
+
+if ($('#fd')) {
+    $('#fd').textContent = DISCLOSURE;
+}
 const sb=CONFIG.supabaseUrl?supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseAnonKey):null;
 let P=[],C=[],ready=false,session=null,query='';
 const setTitle=(t,d)=>{document.title=t?t+' | '+CONFIG.brand:CONFIG.brand;document.querySelector('meta[name=description]').content=d||'Discover products and deals from Indian retailers with Velmora. Confirm current details on the retailer website.';document.querySelector('meta[property="og:title"]').content=document.title;const ogd=document.querySelector('meta[property="og:description"]');if(ogd)ogd.content=d||'Find the deal. Love the savings.';const canon=document.querySelector('link[rel=canonical]');if(canon)canon.href='https://velmorashop.vercel.app/';}
