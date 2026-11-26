@@ -1869,6 +1869,93 @@ msg('Preview completed. Review products before saving.');
 
     }
 }
+  async function loadCategoryRetailerAnalytics() {
+
+    const categoryBox = $('#categoryAnalytics');
+    const retailerBox = $('#retailerAnalytics');
+
+    if (!categoryBox || !retailerBox) return;
+
+    try {
+
+        const [categories, retailers] = await Promise.all([
+            sb.rpc('get_category_clicks'),
+            sb.rpc('get_retailer_clicks')
+        ]);
+
+        if (categories.error) throw categories.error;
+        if (retailers.error) throw retailers.error;
+
+        function renderBars(rows, key, color) {
+
+            if (!rows.length) {
+                return '<p>No click records yet.</p>';
+            }
+
+            const max = Math.max(
+                1,
+                ...rows.map(r => Number(r.total_clicks))
+            );
+
+            return rows.map(r => {
+
+                const clicks = Number(r.total_clicks);
+                const width = clicks / max * 100;
+
+                return `
+                    <div style="margin:18px 0;">
+
+                        <div style="
+                            display:flex;
+                            justify-content:space-between;
+                            margin-bottom:8px;
+                            font-weight:600;
+                        ">
+                            <span>${esc(r[key])}</span>
+                            <span>${clicks} clicks</span>
+                        </div>
+
+                        <div style="
+                            background:#e5e7eb;
+                            height:14px;
+                            border-radius:10px;
+                            overflow:hidden;
+                        ">
+
+                            <div style="
+                                width:${width}%;
+                                height:100%;
+                                background:${color};
+                                border-radius:10px;
+                            "></div>
+
+                        </div>
+
+                    </div>
+                `;
+
+            }).join('');
+        }
+
+        categoryBox.innerHTML = renderBars(
+            categories.data || [],
+            'category',
+            '#6c3bff'
+        );
+
+        retailerBox.innerHTML = renderBars(
+            retailers.data || [],
+            'retailer',
+            '#16803c'
+        );
+
+    } catch (error) {
+
+        categoryBox.textContent = error.message;
+        retailerBox.textContent = error.message;
+
+    }
+}
 async function loadDailyClicksChart() {
 
     const box = $('#dailyClicksChart');
@@ -2013,6 +2100,15 @@ async function analyticsDashboard() {
     </div>
 
 </div>
+<div class="analytics-chart-box">
+    <h3>📂 Most Popular Departments</h3>
+    <div id="categoryAnalytics">Loading...</div>
+</div>
+
+<div class="analytics-chart-box">
+    <h3>🛍️ Most Popular Retailers</h3>
+    <div id="retailerAnalytics">Loading...</div>
+</div>
             <div class="analytics-highlight">
                 <h3>🏆 Most Clicked Product</h3>
 
@@ -2080,6 +2176,7 @@ async function analyticsDashboard() {
 
         $('#refreshAnalytics').onclick = analyticsDashboard;
       loadDailyClicksChart();
+      loadCategoryRetailerAnalytics();
 
         $('#closeAnalytics').onclick = () => {
             panel.innerHTML = '';
