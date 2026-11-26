@@ -2088,6 +2088,128 @@ msg('Preview completed. Review products before saving.');
 
     }
 }
+  async function downloadAnalyticsCSV() {
+
+    try {
+
+        const { data, error } = await sb.rpc(
+            'get_daily_clicks'
+        );
+
+        if (error) throw error;
+
+        const rows = data || [];
+
+        const csv = [
+            'Date,Total Clicks',
+
+            ...rows.map(r =>
+                `${r.click_date},${Number(r.total_clicks)}`
+            )
+
+        ].join('\r\n');
+
+        const blob = new Blob(
+            ['\uFEFF', csv],
+            { type: 'text/csv;charset=utf-8;' }
+        );
+
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+
+        link.href = url;
+
+        link.download = 'VELMORA-Analytics-30-Days.csv';
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        link.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    } catch (error) {
+
+        alert('Download failed: ' + error.message);
+
+    }
+}
+  async function loadMonthlyGrowth() {
+
+    const box = $('#monthlyGrowth');
+
+    if (!box) return;
+
+    try {
+
+        const { data, error } = await sb.rpc(
+            'get_monthly_growth'
+        );
+
+        if (error) throw error;
+
+        if (!box.isConnected) return;
+
+        const s = data || {};
+
+        const current = Number(s.current_month_clicks || 0);
+
+        const previous = Number(s.previous_month_clicks || 0);
+
+        const growth = s.growth_percentage == null
+            ? null
+            : Number(s.growth_percentage);
+
+        const color = growth === null
+            ? '#64748b'
+            : growth > 0
+            ? '#16803c'
+            : growth < 0
+            ? '#dc2626'
+            : '#64748b';
+
+        const growthText = growth === null
+            ? 'N/A'
+            : `${growth > 0 ? '+' : ''}${growth}%`;
+
+        box.innerHTML = `
+
+            <div class="analytics-grid">
+
+                <div class="analytics-card">
+                    <div>📅 This Month</div>
+                    <strong>${current.toLocaleString('en-IN')}</strong>
+                </div>
+
+                <div class="analytics-card">
+                    <div>📅 Previous Month</div>
+                    <strong>${previous.toLocaleString('en-IN')}</strong>
+                </div>
+
+                <div class="analytics-card">
+                    <div>📈 Click Growth</div>
+                    <strong style="color:${color}">
+                        ${growthText}
+                    </strong>
+                </div>
+
+            </div>
+
+            <p style="margin-top:15px;">
+                Current month-to-date vs previous full month.
+            </p>
+
+        `;
+
+    } catch (error) {
+
+        box.textContent =
+            'Monthly growth unavailable: ' + error.message;
+
+    }
+}
 async function loadDailyClicksChart() {
 
     const box = $('#dailyClicksChart');
@@ -2264,6 +2386,15 @@ async function analyticsDashboard() {
     <h3>🛍️ Most Popular Retailers</h3>
     <div id="retailerAnalytics">Loading...</div>
 </div>
+<div class="analytics-chart-box">
+
+    <h3>📈 Monthly Growth Comparison</h3>
+
+    <div id="monthlyGrowth">
+        Loading monthly performance...
+    </div>
+
+</div>
             <div class="analytics-highlight">
                 <h3>🏆 Most Clicked Product</h3>
 
@@ -2324,6 +2455,11 @@ async function analyticsDashboard() {
             <div class="toolbar">
 
                 <button class="btn alt"
+                <button class="btn alt"
+    id="downloadAnalytics"
+    style="background:#16803c;color:white;">
+    📥 Download Analytics CSV
+</button>
                     id="refreshAnalytics">
                     ↻ Refresh Analytics
                 </button>
@@ -2338,9 +2474,11 @@ async function analyticsDashboard() {
         </div>`;
 
         $('#refreshAnalytics').onclick = analyticsDashboard;
+      $('#downloadAnalytics').onclick = downloadAnalyticsCSV;
       loadDailyClicksChart();
       loadCategoryRetailerAnalytics();
       loadTrendingProducts();
+      loadMonthlyGrowth();
       $('#applyDateFilter').onclick = loadDateRangeAnalytics;
 
         $('#closeAnalytics').onclick = () => {
