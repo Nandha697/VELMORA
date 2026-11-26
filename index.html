@@ -865,6 +865,28 @@ a:focus-visible {
         font-size: 26px;
     }
 }
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+  /* ===== VELMORA ANALYTICS GRAPH ===== */
+
+.analytics-chart-box {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 24px;
+    margin: 24px 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,.06);
+}
+
+.analytics-chart-box h3 {
+    color: #6c3bff;
+    margin-bottom: 8px;
+}
+
+.analytics-chart-box p {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
 </style></head><body>
 <header><div class="wrap bar">
 <a class="logo" href="#/">
@@ -1850,6 +1872,95 @@ $('#addSale').onclick = addSaleForm;
 
     }
 }
+  async function loadDailyClicksChart() {
+
+    const canvas = $('#dailyClicksChart');
+
+    if (!canvas) return;
+
+    try {
+
+        const { data, error } = await sb.rpc(
+            'get_daily_clicks'
+        );
+
+        if (error) throw error;
+
+        if (!canvas.isConnected) return;
+
+        const rows = data || [];
+
+        new Chart(canvas, {
+
+            type: 'line',
+
+            data: {
+
+                labels: rows.map(r => r.click_date),
+
+                datasets: [{
+
+                    label: 'Product Clicks',
+
+                    data: rows.map(r => Number(r.total_clicks)),
+
+                    borderColor: '#6c3bff',
+
+                    backgroundColor: 'rgba(108,59,255,0.12)',
+
+                    fill: true,
+
+                    tension: 0.35,
+
+                    borderWidth: 3,
+
+                    pointRadius: 4,
+
+                    pointHoverRadius: 7
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+
+                scales: {
+
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+
+                }
+
+            }
+
+        });
+
+    } catch (error) {
+
+        console.error('Chart error:', error);
+
+        if (canvas.isConnected) {
+            const message = document.createElement('p');
+            message.textContent = 'Graph unavailable: ' + error.message;
+            canvas.parentElement.appendChild(message);
+        }
+
+    }
+
+}
 async function analyticsDashboard() {
 
     const panel = $('#ed');
@@ -1898,7 +2009,17 @@ async function analyticsDashboard() {
                 `).join('')}
 
             </div>
+<div class="analytics-chart-box">
 
+    <h3>📈 Daily Click Performance</h3>
+
+    <p>Last 30 Days · Indian Standard Time</p>
+
+    <div style="position:relative;height:300px;">
+        <canvas id="dailyClicksChart"></canvas>
+    </div>
+
+</div>
             <div class="analytics-highlight">
                 <h3>🏆 Most Clicked Product</h3>
 
@@ -1965,6 +2086,7 @@ async function analyticsDashboard() {
         </div>`;
 
         $('#refreshAnalytics').onclick = analyticsDashboard;
+      loadDailyClicksChart();
 
         $('#closeAnalytics').onclick = () => {
             panel.innerHTML = '';
