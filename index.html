@@ -1662,6 +1662,72 @@ async function bulkUpdateStatus(published) {
 $('#bulkPublish').onclick = () => bulkUpdateStatus(true);
 
 $('#bulkUnpublish').onclick = () => bulkUpdateStatus(false);
+                       $('#exportCSV').onclick = () => {
+
+    const selectedIds = productCheckboxes()
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+    const products = selectedIds.length
+        ? P.filter(p => selectedIds.includes(p.id))
+        : P;
+
+    if (!products.length) {
+        return msg('No products available to export.', 1);
+    }
+
+    const fields = [
+        'id',
+        'name',
+        'category',
+        'subcategory',
+        'price',
+        'original_price',
+        'currency',
+        'retailer',
+        'image',
+        'description',
+        'affiliate_url',
+        'last_verified',
+        'featured',
+        'published',
+        'created_at'
+    ];
+
+    const csv = Papa.unparse({
+        fields: fields,
+        data: products.map(p =>
+            fields.map(field => p[field] ?? '')
+        )
+    }, {
+        escapeFormulae: true
+    });
+
+    const blob = new Blob(
+        ['\uFEFF' + csv],
+        { type: 'text/csv;charset=utf-8;' }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+
+    const date = new Date().toLocaleDateString(
+        'en-CA',
+        { timeZone: 'Asia/Kolkata' }
+    );
+
+    a.href = url;
+    a.download = `VELMORA-Backup-${date}.csv`;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    msg(`${products.length} products exported successfully!`);
+};
                        $('#bulkDelete').onclick = async () => {
 
     const ids = productCheckboxes()
