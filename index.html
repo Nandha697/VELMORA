@@ -1582,6 +1582,163 @@ msg('Preview completed. Review products before saving.');
         });
     };
 }
+  function addSaleForm() {
+
+    const panel = $('#ed');
+
+    panel.innerHTML = `
+        <form class="form" id="saleForm">
+
+            <h2>💰 Add New Sale</h2>
+
+            <div class="two">
+
+                <label>Transaction ID
+                    <input name="transaction_id"
+                        placeholder="EK10001" required>
+                </label>
+
+                <label>Product Name
+                    <input name="product_name"
+                        placeholder="Product name">
+                </label>
+
+                <label>Retailer
+                    <input name="retailer"
+                        placeholder="Flipkart, Myntra, Ajio"
+                        required>
+                </label>
+
+                <label>Order Amount (₹)
+                    <input name="order_amount"
+                        type="number" min="0"
+                        step="0.01" required>
+                </label>
+
+                <label>Commission (₹)
+                    <input name="commission"
+                        type="number" min="0"
+                        step="0.01" required>
+                </label>
+
+                <label>Sale Date
+                    <input name="sale_date"
+                        type="date" required>
+                </label>
+
+                <label>Sale Status
+                    <select name="status">
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </label>
+
+            </div>
+
+            <div class="toolbar">
+
+                <button class="btn alt"
+                    type="submit" id="saveSale">
+                    💾 Save Sale
+                </button>
+
+                <button class="btn ghost"
+                    type="button" id="cancelSale">
+                    Cancel
+                </button>
+
+            </div>
+
+            <div id="saleMessage"></div>
+
+        </form>
+    `;
+
+    const f = $('#saleForm');
+
+    f.elements.namedItem('sale_date').value =
+        new Date().toLocaleDateString('en-CA', {
+            timeZone: 'Asia/Kolkata'
+        });
+
+    $('#cancelSale').onclick = salesDashboard;
+
+    f.onsubmit = async e => {
+
+        e.preventDefault();
+
+        const button = $('#saveSale');
+        const message = $('#saleMessage');
+
+        button.disabled = true;
+        button.textContent = 'Saving...';
+
+        try {
+
+            const data = {
+
+                transaction_id:
+                    f.elements.namedItem('transaction_id').value.trim(),
+
+                product_name:
+                    f.elements.namedItem('product_name').value.trim(),
+
+                retailer:
+                    f.elements.namedItem('retailer').value.trim(),
+
+                order_amount:
+                    Number(f.elements.namedItem('order_amount').value),
+
+                commission:
+                    Number(f.elements.namedItem('commission').value),
+
+                sale_date:
+                    f.elements.namedItem('sale_date').value,
+
+                status:
+                    f.elements.namedItem('status').value
+
+            };
+
+            if (!data.transaction_id || !data.retailer) {
+                throw new Error(
+                    'Transaction ID and Retailer are required.'
+                );
+            }
+
+            const { error } = await sb
+                .from('affiliate_sales')
+                .insert(data);
+
+            if (error) {
+
+                if (error.code === '23505') {
+                    throw new Error(
+                        'Transaction ID already exists.'
+                    );
+                }
+
+                throw error;
+            }
+
+            alert('Sale added successfully!');
+
+            salesDashboard();
+
+        } catch (error) {
+
+            message.textContent = error.message;
+            message.style.color = 'red';
+
+        } finally {
+
+            button.disabled = false;
+            button.textContent = '💾 Save Sale';
+
+        }
+    };
+}
   async function salesDashboard() {
 
     const panel = $('#ed');
@@ -1657,7 +1814,11 @@ msg('Preview completed. Review products before saving.');
             </div>
 
             <div class="toolbar">
-
+<button class="btn alt"
+    id="addSale"
+    style="background:#16803c;color:white;">
+    + Add Sale
+</button>
                 <button class="btn alt"
                     id="refreshSales">
                     ↻ Refresh Sales
@@ -1673,7 +1834,7 @@ msg('Preview completed. Review products before saving.');
         </div>`;
 
         $('#refreshSales').onclick = salesDashboard;
-
+$('#addSale').onclick = addSaleForm;
         $('#closeSales').onclick = () => {
             panel.innerHTML = '';
         };
