@@ -1199,10 +1199,7 @@ function form(p) {
  <label><span><input type="checkbox" name="featured" ${p.featured?'checked':''}> Featured (Trending)</span></label><label><span><input type="checkbox" name="published" ${p.published?'checked':''}> Published</span></label>
  <div><button class="btn">Save product</button> <button type="button" class="btn ghost" id="cx">Cancel</button></div></form>`;
  const f = $('#pf');
-if (n) {
-  f.elements.namedItem('id').value = `product-${crypto.randomUUID()}`;
-  f.elements.namedItem('id').readOnly = true;
-}
+
 
 const fill = () => {
   f.subcategory.innerHTML = C
@@ -1214,7 +1211,20 @@ const fill = () => {
 fill();
 f.category.onchange = fill;
 $('#cx').onclick = () => $('#ed').innerHTML = '';
- f.onsubmit=async e=>{e.preventDefault();const u = f.elements.namedItem('affiliate_url')?.value?.trim() || '';if(u&&!okUrl(u))return msg('Affiliate link must be https and on an approved domain (CONFIG.allowedHosts).',1);
+ let saving = false;
+
+f.onsubmit = async e => {
+    e.preventDefault();
+
+    if (saving) return;
+
+    saving = true;
+
+    const saveBtn = f.querySelector('button.btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    try {const u = f.elements.namedItem('affiliate_url')?.value?.trim() || '';if(u&&!okUrl(u))return msg('Affiliate link must be https and on an approved domain (CONFIG.allowedHosts).',1);
  const price = Number(f.elements.namedItem('price')?.value || 0);
 const originalValue = f.elements.namedItem('original_price')?.value;
 const op = originalValue ? Number(originalValue) : null;if(op!==null&&op<=price)return msg('Original price must be higher than current price, or leave it empty.',1);
@@ -1245,7 +1255,28 @@ name: f.querySelector('[name="name"]').value.trim(),
   featured: getField('featured').checked,
   published: getField('published').checked
 };
-  const {error}=n?await sb.from('products').insert(row):await sb.from('products').update(row).eq('id',row.id);if(error)return msg(error.message,1);await load();admin();msg('Product saved.')}}
+          const { error } = n
+            ? await sb.from('products').insert(row)
+            : await sb.from('products').update(row).eq('id', p.id);
+
+        if (error) {
+            return msg(error.message, 1);
+        }
+
+        await load();
+        admin();
+        msg('Product saved.');
+
+    } catch (err) {
+        msg(err.message || 'Unable to save product.', 1);
+
+    } finally {
+        saving = false;
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save product';
+    }
+};
+}
 
 // Share the Velmora product page, never the affiliate retailer URL.
 function productShareUrl(id){return new URL('#/p/'+encodeURIComponent(id),'https://velmorashop.vercel.app/').href}
