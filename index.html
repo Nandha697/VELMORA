@@ -1837,11 +1837,7 @@ msg('Preview completed. Review products before saving.');
             </div>
 
             <div class="toolbar">
-<button class="btn alt"
-    id="addSale"
-    style="background:#16803c;color:white;">
-    + Add Sale
-</button>
+
                 <button class="btn alt"
                     id="refreshSales">
                     ↻ Refresh Sales
@@ -1857,7 +1853,6 @@ msg('Preview completed. Review products before saving.');
         </div>`;
 
         $('#refreshSales').onclick = salesDashboard;
-$('#addSale').onclick = addSaleForm;
         $('#closeSales').onclick = () => {
             panel.innerHTML = '';
         };
@@ -1957,19 +1952,7 @@ async function loadDailyClicksChart() {
 
     }
 }
-  catch (error) {
-
-        console.error('Chart error:', error);
-
-        if (canvas.isConnected) {
-            const message = document.createElement('p');
-            message.textContent = 'Graph unavailable: ' + error.message;
-            canvas.parentElement.appendChild(message);
-        }
-
-    }
-
-}
+ 
 async function analyticsDashboard() {
 
     const panel = $('#ed');
