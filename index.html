@@ -1531,6 +1531,13 @@ style="background:#16803c;color:white;">
     Delete Selected
 </button>
 <span id="selectedCount">0 selected</span>
+<input type="search"
+    id="adminSearch"
+    placeholder="🔍 Search products..."
+    style="padding:10px 15px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    min-width:240px;">
     <select id="verifyFilter">
         <option value="all">All Products</option>
         <option value="today">Verified Today</option>
@@ -1635,6 +1642,35 @@ async function bulkUpdateStatus(published) {
 
         msg(error.message, 1);
         updateSelectedCount();
+      $('#adminSearch').addEventListener('input', () => {
+
+    const keyword = $('#adminSearch').value
+        .trim()
+        .toLowerCase();
+
+    productCheckboxes().forEach(cb => {
+
+        const p = P.find(x => x.id === cb.value);
+
+        if (!p) return;
+
+        const searchable = [
+            p.name,
+            p.category,
+            p.subcategory,
+            p.retailer
+        ].join(' ').toLowerCase();
+
+        cb.checked = false;
+
+        cb.closest('tr').hidden =
+            !searchable.includes(keyword);
+
+    });
+
+    updateSelectedCount();
+
+});
 
     }
 }
