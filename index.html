@@ -2025,6 +2025,69 @@ msg('Preview completed. Review products before saving.');
 
     }
 }
+  async function loadDateRangeAnalytics() {
+
+    const start = $('#analyticsStart').value;
+    const end = $('#analyticsEnd').value;
+    const box = $('#dateRangeResult');
+
+    if (!start || !end) {
+        box.textContent = 'Please select both dates.';
+        return;
+    }
+
+    if (start > end) {
+        box.textContent = 'Invalid date range.';
+        return;
+    }
+
+    box.textContent = 'Loading analytics...';
+
+    try {
+
+        const { data, error } = await sb.rpc(
+            'get_date_range_clicks',
+            {
+                p_start: start,
+                p_end: end
+            }
+        );
+
+        if (error) throw error;
+
+        const s = data || {};
+
+        const stats = [
+            ['🖱️ Total Clicks', s.total_clicks],
+            ['📦 Products Clicked', s.unique_products],
+            ['📂 Departments', s.total_categories],
+            ['🛍️ Retailers', s.total_retailers]
+        ];
+
+        box.innerHTML = `
+            <div class="analytics-grid">
+
+                ${stats.map(([title, value]) => `
+                    <div class="analytics-card">
+
+                        <div>${title}</div>
+
+                        <strong>
+                            ${Number(value || 0).toLocaleString('en-IN')}
+                        </strong>
+
+                    </div>
+                `).join('')}
+
+            </div>
+        `;
+
+    } catch (error) {
+
+        box.textContent = 'Filter failed: ' + error.message;
+
+    }
+}
 async function loadDailyClicksChart() {
 
     const box = $('#dailyClicksChart');
@@ -2145,6 +2208,29 @@ async function analyticsDashboard() {
         <div class="form">
 
             <h2>📊 VELMORA Analytics Dashboard</h2>
+            <div class="analytics-chart-box">
+
+    <h3>📅 Custom Date Range</h3>
+
+    <div class="two">
+
+        <label>Start Date
+            <input type="date" id="analyticsStart">
+        </label>
+
+        <label>End Date
+            <input type="date" id="analyticsEnd">
+        </label>
+
+    </div>
+
+    <button class="btn alt" id="applyDateFilter">
+        🔍 Apply Filter
+    </button>
+
+    <div id="dateRangeResult"></div>
+
+</div>
 
             <div class="analytics-grid">
 
@@ -2255,6 +2341,7 @@ async function analyticsDashboard() {
       loadDailyClicksChart();
       loadCategoryRetailerAnalytics();
       loadTrendingProducts();
+      $('#applyDateFilter').onclick = loadDateRangeAnalytics;
 
         $('#closeAnalytics').onclick = () => {
             panel.innerHTML = '';
