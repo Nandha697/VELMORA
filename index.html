@@ -1279,7 +1279,12 @@ name: f.querySelector('[name="name"]').value.trim(),
 }
 
 // Share the Velmora product page, never the affiliate retailer URL.
-function productShareUrl(id){return new URL('#/p/'+encodeURIComponent(id),'https://velmorashop.vercel.app/').href}
+function productShareUrl(id) {
+    return new URL(
+        '/product/' + encodeURIComponent(id),
+        'https://velmorashop.vercel.app/'
+    ).href;
+}
 async function shareProduct(id){
  const p=P.find(x=>String(x.id)===String(id)&&x.published);if(!p)return;
  const url=productShareUrl(p.id);
