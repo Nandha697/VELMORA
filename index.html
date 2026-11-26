@@ -1582,6 +1582,113 @@ msg('Preview completed. Review products before saving.');
         });
     };
 }
+  async function salesDashboard() {
+
+    const panel = $('#ed');
+
+    panel.innerHTML = `
+        <div class="form">
+            <h2>💰 Sales & Earnings</h2>
+            <p>Loading sales data...</p>
+        </div>
+    `;
+
+    try {
+
+        const { data, error } = await sb.rpc(
+            'get_sales_summary'
+        );
+
+        if (error) throw error;
+
+        const s = data || {};
+
+        const stats = [
+            ['🛒 Total Sales', s.total_sales || 0],
+            ['⏳ Pending Sales', s.pending_sales || 0],
+            ['✅ Confirmed Sales', s.confirmed_sales || 0],
+            ['❌ Cancelled Sales', s.cancelled_sales || 0]
+        ];
+
+        const earnings = [
+            ['💰 Total Commission', s.total_commission || 0],
+            ['⏳ Pending Commission', s.pending_commission || 0],
+            ['✅ Confirmed Commission', s.confirmed_commission || 0],
+            ['❌ Cancelled Commission', s.cancelled_commission || 0]
+        ];
+
+        panel.innerHTML = `
+        <div class="form">
+
+            <h2>💰 VELMORA Sales Dashboard</h2>
+
+            <h3>Sales Overview</h3>
+
+            <div class="analytics-grid">
+
+                ${stats.map(([title, value]) => `
+                    <div class="analytics-card">
+                        <div>${title}</div>
+                        <strong>
+                            ${Number(value).toLocaleString('en-IN')}
+                        </strong>
+                    </div>
+                `).join('')}
+
+            </div>
+
+            <h3>Commission Overview</h3>
+
+            <div class="analytics-grid">
+
+                ${earnings.map(([title, value]) => `
+                    <div class="analytics-card"
+                        style="background:linear-gradient(135deg,#16803c,#065f46);">
+
+                        <div>${title}</div>
+
+                        <strong>
+                            ${inr(value)}
+                        </strong>
+
+                    </div>
+                `).join('')}
+
+            </div>
+
+            <div class="toolbar">
+
+                <button class="btn alt"
+                    id="refreshSales">
+                    ↻ Refresh Sales
+                </button>
+
+                <button class="btn ghost"
+                    id="closeSales">
+                    Close Dashboard
+                </button>
+
+            </div>
+
+        </div>`;
+
+        $('#refreshSales').onclick = salesDashboard;
+
+        $('#closeSales').onclick = () => {
+            panel.innerHTML = '';
+        };
+
+    } catch (error) {
+
+        panel.innerHTML = `
+            <div class="note err">
+                Sales dashboard failed:
+                ${esc(error.message)}
+            </div>
+        `;
+
+    }
+}
 async function analyticsDashboard() {
 
     const panel = $('#ed');
@@ -1716,6 +1823,10 @@ async function analyticsDashboard() {
   $('#lf').onsubmit=async e=>{e.preventDefault();const f=e.target;const {data,error}=await sb.auth.signInWithPassword({email:f.e.value,password:f.p.value});if(error)return $('#le').textContent=error.message;session=data.session;route()};return}
  if(!await isAdmin()){app.innerHTML=`<div class="note err">This account is not an administrator.</div><button class="btn" id="lo">Log out</button>`;$('#lo').onclick=out;return}
  app.innerHTML=`<section><div class="toolbar"><h2 style="margin:0;flex:1">Admin dashboard</h2><button class="btn alt" id="nw">Add product</button>
+<button class="btn alt" id="salesDashboard"
+    style="background:#16803c;color:white;">
+    💰 Sales & Earnings
+</button>
 <button class="btn alt" id="analytics"
     style="background:#6c3bff;color:white;">
     📊 Analytics
@@ -1803,6 +1914,7 @@ style="background:#e3f4ff;color:#0088cc;border-color:#0088cc;">
  $('#lo').onclick=out;$('#nw').onclick=()=>form();$('#nc').onclick=catForm;
                        $('#bulk').onclick = bulkForm;
                        $('#analytics').onclick = analyticsDashboard;
+                        $('#salesDashboard').onclick = salesDashboard;
                        const selectAll = $('#selectAll');
 
 const productCheckboxes = () =>
