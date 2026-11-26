@@ -1390,7 +1390,9 @@ setTimeout(() => URL.revokeObjectURL(url), 1000);
                         image: image,
                         description: (r.description || '').trim(),
                         affiliate_url: link,
-                        last_verified: null,
+                      last_verified: new Date().toLocaleDateString('en-CA', {
+    timeZone: 'Asia/Kolkata'
+}),
                         featured: false,
                         published: false
 
