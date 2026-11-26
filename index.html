@@ -1642,6 +1642,48 @@ async function bulkUpdateStatus(published) {
 $('#bulkPublish').onclick = () => bulkUpdateStatus(true);
 
 $('#bulkUnpublish').onclick = () => bulkUpdateStatus(false);
+                       $('#bulkDelete').onclick = async () => {
+
+    const ids = productCheckboxes()
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+    if (!ids.length) return;
+
+    const confirmation = prompt(
+        `You are about to permanently delete ${ids.length} products.\n\nType DELETE to confirm.`
+    );
+
+    if (confirmation !== 'DELETE') {
+        return msg('Deletion cancelled.');
+    }
+
+    $('#bulkDelete').disabled = true;
+    $('#bulkPublish').disabled = true;
+    $('#bulkUnpublish').disabled = true;
+
+    try {
+
+        const { data, error } = await sb
+            .from('products')
+            .delete()
+            .in('id', ids)
+            .select('id');
+
+        if (error) throw error;
+
+        await load();
+        await admin();
+
+        msg(`${data.length} products deleted successfully!`);
+
+    } catch (error) {
+
+        msg('Delete failed: ' + error.message, 1);
+        updateSelectedCount();
+
+    }
+};
 selectAll.onchange = () => {
 
     visibleCheckboxes().forEach(cb => {
