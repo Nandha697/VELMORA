@@ -1166,6 +1166,74 @@ async function isAdmin(){
 
   return !!data?.length;
 }
+  function bulkForm() {
+
+    $('#ed').innerHTML = `
+    <div class="form">
+
+        <h2>📥 Bulk Product Upload</h2>
+
+        <p>Upload multiple products using a CSV file.</p>
+
+        <button type="button" class="btn" id="downloadCSV">
+            ⬇ Download CSV Template
+        </button>
+
+        <label>
+            Select CSV File
+            <input type="file" id="bulkFile" accept=".csv">
+        </label>
+
+        <button type="button" class="btn alt" id="previewCSV">
+            Preview Products
+        </button>
+
+        <div id="bulkPreview"></div>
+
+        <button type="button" class="btn" id="saveBulk" disabled>
+            Save All Products
+        </button>
+
+        <button type="button" class="chip" id="closeBulk">
+            Cancel
+        </button>
+
+    </div>`;
+
+    $('#closeBulk').onclick = () => {
+        $('#ed').innerHTML = '';
+    };
+
+    $('#downloadCSV').onclick = () => {
+
+        const headers = [
+            'name',
+            'category',
+            'subcategory',
+            'price',
+            'original_price',
+            'retailer',
+            'image',
+            'description',
+            'affiliate_url'
+        ].join(',');
+
+        const blob = new Blob(
+            [headers + '\n'],
+            {type: 'text/csv;charset=utf-8;'}
+        );
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+
+        a.href = url;
+        a.download = 'VELMORA-Product-Template.csv';
+        a.click();
+
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+}
 async function admin(){setTitle('Admin');
  if(!session){app.innerHTML=`<form class="form" id="lf" style="max-width:380px;margin:30px auto"><h2>Admin login</h2><label>Email<input name="e" type="email" required autocomplete="username"></label><label>Password<input name="p" type="password" required autocomplete="current-password"></label><button class="btn">Log in</button><p class="err" id="le"></p></form>`;
   $('#lf').onsubmit=async e=>{e.preventDefault();const f=e.target;const {data,error}=await sb.auth.signInWithPassword({email:f.e.value,password:f.p.value});if(error)return $('#le').textContent=error.message;session=data.session;route()};return}
@@ -1209,6 +1277,7 @@ style="background:#e3f4ff;color:#0088cc;border-color:#0088cc;">
 
 <button class="chip" data-e="${esc(p.id)}">Edit</button> <button class="chip" data-d="${esc(p.id)}">Delete</button></td></tr>`).join('')}</table></div></section>`;
  $('#lo').onclick=out;$('#nw').onclick=()=>form();$('#nc').onclick=catForm;
+                       $('#bulk').onclick = bulkForm;
                        $('#verifyFilter').onchange = function () {
 
     const filter = this.value;
