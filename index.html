@@ -1037,9 +1037,9 @@ if ($('#fd')) {
 }
 const sb=CONFIG.supabaseUrl?supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseAnonKey):null;
 let P=[],C=[],ready=false,session=null,query='';
- async function trackProductClick(productId) {
+async function trackProductClick(productId) {
 
-    if (!sb || !productId) return;
+    if (!productId) return;
 
     const key = 'velmora_click_' + productId;
     const now = Date.now();
@@ -1049,10 +1049,9 @@ let P=[],C=[],ready=false,session=null,query='';
             localStorage.getItem(key) || 0
         );
 
-      if (now - lastClick < 30000) {
-    console.log('Repeated click blocked:', productId);
-    return;
-}
+        if (now - lastClick < 30000) {
+            return;
+        }
 
         localStorage.setItem(key, String(now));
 
@@ -1061,15 +1060,19 @@ let P=[],C=[],ready=false,session=null,query='';
     }
 
     try {
-        const { error } = await sb.rpc(
-            'track_product_click',
-            {
-                p_product_id: productId
-            }
-        );
+        const response = await fetch('/api/track-click', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                productId: productId
+            }),
+            keepalive: true
+        });
 
-        if (error) {
-            console.warn('Click tracking failed:', error.message);
+        if (!response.ok) {
+            console.warn('Click tracking failed:', response.status);
         }
 
     } catch (error) {
