@@ -1037,8 +1037,27 @@ if ($('#fd')) {
 }
 const sb=CONFIG.supabaseUrl?supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseAnonKey):null;
 let P=[],C=[],ready=false,session=null,query='';
-  async function trackProductClick(productId) {
+ async function trackProductClick(productId) {
+
     if (!sb || !productId) return;
+
+    const key = 'velmora_click_' + productId;
+    const now = Date.now();
+
+    try {
+        const lastClick = Number(
+            localStorage.getItem(key) || 0
+        );
+
+        if (now - lastClick < 30000) {
+            return;
+        }
+
+        localStorage.setItem(key, String(now));
+
+    } catch (error) {
+        console.warn('Click cooldown unavailable');
+    }
 
     try {
         const { error } = await sb.rpc(
