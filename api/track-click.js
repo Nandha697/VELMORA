@@ -1,3 +1,6 @@
+import { createHmac } from 'node:crypto';
+import { isIP } from 'node:net';
+
 export default async function handler(req, res) {
 
     res.setHeader('Cache-Control', 'no-store');
@@ -22,8 +25,9 @@ export default async function handler(req, res) {
 
     const supabaseUrl = process.env.SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const hashSecret = process.env.CLICK_HASH_SECRET;
 
-    if (!supabaseUrl || !serviceKey) {
+    if (!supabaseUrl || !serviceKey || !hashSecret) {
         return res.status(500).json({
             error: 'Server configuration missing'
         });
@@ -31,8 +35,22 @@ export default async function handler(req, res) {
 
     try {
 
+        const ip = String(
+            req.headers['x-vercel-forwarded-for'] || ''
+        ).split(',')[0].trim();
+
+        if (!isIP(ip)) {
+            return res.status(400).json({
+                error: 'Visitor identification unavailable'
+            });
+        }
+
+        const visitorHash = createHmac('sha256', hashSecret)
+            .update(ip)
+            .digest('hex');
+
         const response = await fetch(
-            `${supabaseUrl}/rest/v1/rpc/track_product_click`,
+            `${supabaseUrl}/rest/v1/rpc/track_secure_click`,
             {
                 method: 'POST',
                 headers: {
@@ -41,7 +59,8 @@ export default async function handler(req, res) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    p_product_id: productId
+                    p_product_id: productId,
+                    p_visitor_hash: visitorHash
                 })
             }
         );
@@ -52,8 +71,11 @@ export default async function handler(req, res) {
             });
         }
 
+        const counted = await response.json();
+
         return res.status(200).json({
-            success: true
+            success: true,
+            counted: counted === true
         });
 
     } catch (error) {
@@ -63,4 +85,4 @@ export default async function handler(req, res) {
         });
 
     }
-}  
+}
