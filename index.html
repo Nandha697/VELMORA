@@ -1049,9 +1049,10 @@ let P=[],C=[],ready=false,session=null,query='';
             localStorage.getItem(key) || 0
         );
 
-        if (now - lastClick < 30000) {
-            return;
-        }
+      if (now - lastClick < 30000) {
+    console.log('Repeated click blocked:', productId);
+    return;
+}
 
         localStorage.setItem(key, String(now));
 
@@ -1222,6 +1223,12 @@ The public shopping pages do not ask you to create a customer account or submit 
 
 3. Technical information and service providers
 The website uses Supabase to retrieve product and category listings and to support administrator authentication and storage. The hosting provider, Supabase and other infrastructure providers may process technical information such as request, device or security logs as part of operating their services. Their own privacy notices and settings govern their processing. This website does not claim to control the data practices of those providers.
+Product Click Analytics
+Velmora records product link clicks to understand product popularity and improve website performance.
+Our analytics records may include the product ID, product name, category, retailer and click timestamp.
+Our click analytics table does not store visitor names, email addresses, payment details or IP addresses.
+Browser local storage may be used to reduce repeated click counting. Our hosting and infrastructure providers may separately process technical information.
+Analytics reports are restricted to authorised administrators.
 
 4. Affiliate links and third-party websites
 When you select a retailer or affiliate link, you leave Velmora and visit a third-party service. Retailers and affiliate networks may use cookies or similar technologies to attribute referrals, measure activity, personalise services or process purchases. Their privacy policies apply to activity on their services. We do not receive your retailer password or payment details through the affiliate link.
