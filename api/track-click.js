@@ -65,14 +65,21 @@ export default async function handler(req, res) {
             }
         );
 
-        if (!response.ok) {
-            return res.status(502).json({
-                error: 'Click tracking failed'
-            });
-        }
+       if (!response.ok) {
+    const details = await response.text();
 
+    console.error(
+        'Supabase RPC Error:',
+        response.status,
+        details
+    );
+
+    return res.status(502).json({
+        error: 'Click tracking failed'
+    });
+}
         const counted = await response.json();
-
+console.log('Secure click counted:', counted);
         return res.status(200).json({
             success: true,
             counted: counted === true
